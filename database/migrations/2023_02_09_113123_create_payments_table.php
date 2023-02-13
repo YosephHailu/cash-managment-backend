@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string("project");
             $table->date("transaction_date")->default(now());
             $table->string("currency")->default("ETB");
+            $table->string("payment_method");
 
             $table->foreignId('bank_account_id')->constrained()->onUpdate('restrict')->onDelete('restrict');
             $table->foreignId('to_bank_account_id')->nullable()->constrained('bank_accounts')->onUpdate('restrict')->onDelete('restrict');

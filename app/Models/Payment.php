@@ -10,7 +10,7 @@ class Payment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["id", "transaction_amount", "amount_in_words", "transaction_date", "to", "project", "reason", "bank_account_id"];
+    protected $fillable = ["id", "transaction_amount", "amount_in_words", "transaction_date", "to", "project", "payment_method", "reason", "bank_account_id"];
 
     /**
      * Get the bankAccount that owns the Payment

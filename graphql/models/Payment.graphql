@@ -15,6 +15,7 @@ input PaymentCreateInput {
     transaction_amount: Float! @rules(apply: ["required"])
     transaction_date: Date!
     amount_in_words: String!
+    payment_method: String!
     to: String!
     project: String!
     reason: String
@@ -26,6 +27,7 @@ input PaymentUpdateInput {
     to_bank_account_id: ID
     transaction_amount: Float! @rules(apply: ["required"])
     amount_in_words: String!
+    payment_method: String!
     transaction_date: Date!
     to: String!
     project: String!
@@ -42,5 +44,6 @@ type Payment {
     project: String
     currency: String
     reason: String
+    payment_method: String
     bankAccount: BankAccount
 }
