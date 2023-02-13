@@ -1,0 +1,36 @@
+extend type Query {
+    permissions(name: String @like): [Permission] @orderBy(column: "created_at", direction: DESC) @paginate
+    permission(id: ID! @eq): Permission @find
+}
+
+extend type Mutation {
+    createPermission(input: PermissionCreateInput! @spread): Permission @create
+    updatePermission(input: PermissionUpdateInput! @spread): Permission @update
+    deletePermission(id: ID! @eq): Permission @guard(with: ["api"]) @delete
+}
+
+input PermissionCreateInput {
+    name: String! @rules(apply: ["required", "unique:permissions,name"])
+    code: String
+    resource: String
+    description: String
+    is_active: Boolean
+}
+
+input PermissionUpdateInput {
+    id: ID! @rules(apply: ["required", "exists:permissions,id"])
+    name: String! @rules(apply: ["required"])
+    code: String
+    resource: String
+    description: String
+    is_active: Boolean
+}
+
+type Permission {
+    id: ID
+    name: String
+    code: String
+    resource: String
+    description: String
+    is_active: Boolean
+}

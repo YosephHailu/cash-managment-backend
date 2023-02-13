@@ -1,0 +1,45 @@
+extend type Query {
+    bankAccounts(name: String @like): [BankAccount] @orderBy(column: "created_at", direction: DESC) @paginate
+    bankAccount(id: ID! @eq): BankAccount @find
+}
+
+extend type Mutation {
+    createBankAccount(input: BankAccountCreateInput! @spread): BankAccount  @field(resolver: "BankAccountMutation@store")
+    updateBankAccount(input: BankAccountUpdateInput! @spread): BankAccount @field(resolver: "BankAccountMutation@update")
+    deleteBankAccount(id: ID! @eq): BankAccount @guard(with: ["api"]) @delete
+}
+
+input BankAccountCreateInput {
+    bank_id: ID! @rules(apply: ["required", "exists:banks,id"])
+    account_number: String! @rules(apply: ["required"])
+    branch: String!
+    initial_balance: Float!
+    balance: Float!
+    description: String
+    check_image: Upload
+}
+
+input BankAccountUpdateInput {
+    id: ID! @rules(apply: ["required", "exists:bank_accounts,id"])
+    bank_id: ID! @rules(apply: ["required", "exists:banks,id"])
+    account_number: String! @rules(apply: ["required"])
+    branch: String!
+    initial_balance: Float!
+    balance: Float!
+    description: String
+    check_image: Upload
+    check_template_data: JSON
+}
+
+type BankAccount {
+    id: ID
+    account_number: String
+    branch: String
+    initial_balance: Float
+    balance: Float
+    bank_id: ID
+    bank: Bank
+    description: String
+    check_image_url: String
+    check_template_data: JSON
+}

@@ -1,0 +1,30 @@
+extend type Query {
+    users: [User] @paginate
+    me: User @auth
+    user(id: String! @eq @rules(apply: ["exists:users,id"])): User! @find
+}
+
+extend type Mutation {
+    updateUser(input: UserUpdateInput! @spread): User  @field(resolver: "RegistrationMutation@update")
+    assignRole(input: UserRoleInput! @spread): User  @field(resolver: "RegistrationMutation@assignRole")
+    updateActiveStatus(input: UserActiveStatusInput! @spread): User  @update
+    deleteUser(id: ID! @eq): User @delete
+}
+
+input UserActiveStatusInput {
+    id: ID! @rules(apply: ["required", "exists:users,id"])
+    is_active: Boolean!
+}
+
+input UserRoleInput {
+    user_id: ID! @rules(apply: ["required", "exists:users,id"])
+    role_id: [ID!]! @rules(apply: ["required", "exists:roles,id"])
+}
+
+input UserUpdateInput {
+    id: ID! @rules(apply: ["required", "exists:users,id"])
+    name: String! @rules(apply: ["required", "string"])
+    password: String! @rules(apply: ["required", "confirmed", "min:8"])
+    password_confirmation: String!
+    roles: [ID!]
+}

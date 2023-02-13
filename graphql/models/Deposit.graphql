@@ -1,0 +1,46 @@
+extend type Query {
+    deposits(name: String @like): [Deposit] @orderBy(column: "created_at", direction: DESC) @paginate
+    deposit(id: ID! @eq): Deposit @find
+}
+
+extend type Mutation {
+    createDeposit(input: DepositCreateInput! @spread): Deposit @field(resolver: "DepositMutation@store")
+    updateDeposit(input: DepositUpdateInput! @spread): Deposit @update
+    deleteDeposit(id: ID! @eq): Deposit @guard(with: ["api"]) @delete
+}
+
+input DepositCreateInput {
+    bank_account_id: ID! @rules(apply: ["required", "exists:bank_accounts,id"])
+    transaction_amount: Float! @rules(apply: ["required"])
+    transaction_date: Date!
+    reference_no: String!
+    check_type: String!
+    currency: String!
+    project: String!
+    reason: String
+}
+
+input DepositUpdateInput {
+    id: ID! @rules(apply: ["required", "exists:bank_accounts,id"])
+    bank_account_id: ID! @rules(apply: ["required", "exists:bank_accounts,id"])
+    transaction_amount: Float! @rules(apply: ["required"])
+    transaction_date: Date!
+    reference_no: String!
+    check_type: String!
+    currency: String!
+    project: String!
+    reason: String
+}
+
+type Deposit {
+    id: ID
+    bank_account_id: ID
+    transaction_amount: Float
+    transaction_date: Date
+    reference_no: String
+    check_type: String
+    currency: String
+    project: String
+    reason: String
+    bankAccount: BankAccount
+}

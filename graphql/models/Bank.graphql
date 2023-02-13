@@ -1,0 +1,27 @@
+extend type Query {
+    banks(name: String @like): [Bank] @orderBy(column: "created_at", direction: DESC) @paginate
+    bank(id: ID! @eq): Bank @find
+}
+
+extend type Mutation {
+    createBank(input: BankCreateInput! @spread): Bank @create
+    updateBank(input: BankUpdateInput! @spread): Bank @update
+    deleteBank(id: ID! @eq): Bank @guard(with: ["api"]) @delete
+}
+
+input BankCreateInput {
+    name: String! @rules(apply: ["required", "unique:banks,name"])
+    description: String
+}
+
+input BankUpdateInput {
+    id: ID! @rules(apply: ["required", "exists:banks,id"])
+    name: String! @rules(apply: ["required"])
+    description: String
+}
+
+type Bank {
+    id: ID
+    name: String
+    description: String
+}

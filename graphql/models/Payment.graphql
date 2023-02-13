@@ -1,0 +1,46 @@
+extend type Query {
+    payments(name: String @like): [Payment] @orderBy(column: "created_at", direction: DESC) @paginate
+    payment(id: ID! @eq): Payment @find
+}
+
+extend type Mutation {
+    createPayment(input: PaymentCreateInput! @spread): Payment @field(resolver: "PaymentMutation@store")
+    updatePayment(input: PaymentUpdateInput! @spread): Payment @update
+    deletePayment(id: ID! @eq): Payment @guard(with: ["api"]) @delete
+}
+
+input PaymentCreateInput {
+    bank_account_id: ID! @rules(apply: ["required", "exists:bank_accounts,id"])
+    to_bank_account_id: ID
+    transaction_amount: Float! @rules(apply: ["required"])
+    transaction_date: Date!
+    amount_in_words: String!
+    to: String!
+    project: String!
+    reason: String
+}
+
+input PaymentUpdateInput {
+    id: ID! @rules(apply: ["required", "exists:bank_accounts,id"])
+    bank_account_id: ID! @rules(apply: ["required", "exists:bank_accounts,id"])
+    to_bank_account_id: ID
+    transaction_amount: Float! @rules(apply: ["required"])
+    amount_in_words: String!
+    transaction_date: Date!
+    to: String!
+    project: String!
+    reason: String
+}
+
+type Payment {
+    id: ID
+    bank_account_id: ID
+    transaction_amount: Float
+    amount_in_words: String
+    transaction_date: Date
+    to: String
+    project: String
+    currency: String
+    reason: String
+    bankAccount: BankAccount
+}

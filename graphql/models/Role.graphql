@@ -1,0 +1,62 @@
+extend type Query {
+    roles(name: String @like): [Role] @orderBy(column: "created_at", direction: DESC) @paginate
+    role(id: ID! @eq): Role @find
+}
+
+extend type Mutation {
+    createRole(input: RoleCreateInput! @spread): Role @create
+    updateRole(input: RoleUpdateInput! @spread): Role @field(resolver: "RoleMutation@update")
+    deleteRole(id: ID! @eq): Role @guard(with: ["api"]) @delete
+}
+
+input RoleCreateInput {
+    name: String! @rules(apply: ["required", "unique:roles,name"])
+    code: String
+    description: String
+    is_active: Boolean
+    rolePermissions: CreateRolePermissionHasMany
+}
+
+input RoleUpdateInput {
+    id: ID! @rules(apply: ["required", "exists:roles,id"])
+    name: String! @rules(apply: ["required"])
+    code: String
+    description: String
+    is_active: Boolean
+    rolePermissions: CreateRolePermissionHasMany
+}
+
+input CreateRolePermissionHasMany {
+    create: [CreateRolePermissionInput]!
+}
+
+input CreateRolePermissionInput {
+    permission_id: ID!
+    rolePermissionTypes: CreateRolePermissionTypeHasMany
+}
+
+input CreateRolePermissionTypeHasMany {
+    # connect: [ID!]!
+    create: [CreateRolePermissionTypeInput]
+}
+
+input CreateRolePermissionTypeInput {
+    permission_type_id: ID!
+    role_permission_id: ID
+}
+
+type RolePermission{
+    role: Role
+    permission: Permission
+    permissionTypes: [PermissionType]
+}
+
+type Role {
+    id: ID
+    name: String
+    code: String
+    description: String
+    is_active: Boolean
+    permissions: [Permission]
+    rolePermissions: [RolePermission]
+}
