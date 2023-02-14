@@ -26,6 +26,11 @@ final class PaymentMutation
             "payment_method", "reason", "project"]);
 
         DB::beginTransaction();
+        if($args['to_bank_account_id'] ?? null) {
+            $toBankAccount = BankAccount::find($args['to_bank_account_id']);
+            $toBankAccount->balance += $args['transaction_amount'];
+            $toBankAccount->save();
+        }
         $bankAccount = BankAccount::find($args['bank_account_id']);
 
         $dispatch = Payment::create($data->toArray());
@@ -33,11 +38,6 @@ final class PaymentMutation
         $bankAccount->balance -= $args['transaction_amount'];
         $bankAccount->save();
 
-        if($args['to_bank_account_id'] != null) {
-            $toBankAccount = BankAccount::find($args['to_bank_account_id']);
-            $toBankAccount->balance += $args['transaction_amount'];
-            $toBankAccount->save();
-        }
         DB::commit();
 
         return $dispatch;
