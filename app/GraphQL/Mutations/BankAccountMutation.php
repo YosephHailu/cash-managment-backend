@@ -21,8 +21,6 @@ final class BankAccountMutation
 
     public function store($rootValue, array $args)
     {
-        Log::debug($args);
-        return;
         $data = collect($args)->only(["account_number", "balance", "initial_balance", "branch", "bank_id", "description"]);
 
         $bankAccount = BankAccount::create($data);
