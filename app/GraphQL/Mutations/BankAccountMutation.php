@@ -23,7 +23,7 @@ final class BankAccountMutation
     {
         $data = collect($args)->only(["account_number", "balance", "initial_balance", "branch", "bank_id", "description"]);
 
-        $bankAccount = BankAccount::create($data);
+        $bankAccount = BankAccount::create($data->toArray());
 
         try {
             if($args['check_image']){
