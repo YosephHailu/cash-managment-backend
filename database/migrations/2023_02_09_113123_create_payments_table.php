@@ -24,6 +24,19 @@ return new class extends Migration
             $table->string("currency")->default("ETB");
             $table->string("payment_method");
 
+            $table->foreignId('voided_by_id')->nullable()->constrained('users', 'id')->onUpdate('cascade')->onDelete('restrict');
+            $table->date('voided_at')->nullable();
+            $table->boolean('voided')->default(false);
+            $table->longText('voided_reason')->nullable();
+            
+            $table->foreignId('checked_by_id')->nullable()->constrained('users', 'id')->onUpdate('cascade')->onDelete('restrict');
+            $table->date('checked_at')->nullable();
+            $table->boolean('checked')->default(false);
+            
+            $table->foreignId('approved_by_id')->nullable()->constrained('users', 'id')->onUpdate('cascade')->onDelete('restrict');
+            $table->date('approved_at')->nullable();
+            $table->boolean('approved')->default(false);
+            
             $table->foreignId('bank_account_id')->constrained()->onUpdate('restrict')->onDelete('restrict');
             $table->foreignId('to_bank_account_id')->nullable()->constrained('bank_accounts')->onUpdate('restrict')->onDelete('restrict');
 

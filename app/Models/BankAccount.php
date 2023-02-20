@@ -30,6 +30,16 @@ class BankAccount extends Model implements HasMedia
         return $this->getFirstMediaUrl(FileFolders::CHECK);
     }
 
+    public function getTotalDepositAttribute()
+    {
+        return $this->deposits()->sum('transaction_amount');
+    }
+
+    public function getTotalPaymentAttribute()
+    {
+        return $this->payments()->sum('transaction_amount');
+    }
+
     /**
      * Get the bank that owns the BankAccount
      *

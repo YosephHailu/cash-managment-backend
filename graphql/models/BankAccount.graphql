@@ -42,4 +42,8 @@ type BankAccount {
     description: String
     check_image_url: String
     check_template_data: JSON
+    deposits: [Deposit]
+    payments: [Payment]
+    total_deposit: Float
+    total_payment: Float
 }

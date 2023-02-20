@@ -2,9 +2,13 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class Payment extends Model
 {
@@ -20,5 +24,25 @@ class Payment extends Model
     public function bankAccount(): BelongsTo
     {
         return $this->belongsTo(BankAccount::class);
+    }
+
+    public function getVoidedDateAttribute()
+    {
+        return $this->voided_at ? Carbon::parse($this->voided_at)->diffForHumans() : "";
+    }
+
+    public function getPaymentDateAttribute()
+    {
+        return Carbon::parse($this->transaction_date)->format("M-d-Y");
+    }
+
+    public function getPaymentPendingAttribute()
+    {
+        return (Str::lower($this->payment_method) == "check") && Carbon::parse($this->transaction_date)->isFuture();
+    }
+
+    public function scopePending(Builder $query, String $search)
+    {
+        return $query->where([["payment_method", "check"]])->where("transaction_date", ">", Carbon::now());
     }
 }

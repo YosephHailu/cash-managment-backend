@@ -1,12 +1,19 @@
 extend type Query {
-    payments(name: String @like): [Payment] @orderBy(column: "created_at", direction: DESC) @paginate
+    payments(name: String @like, voided: Boolean @eq, pending: Boolean @scope): 
+        [Payment] @orderBy(column: "created_at", direction: DESC) @paginate
     payment(id: ID! @eq): Payment @find
 }
 
 extend type Mutation {
     createPayment(input: PaymentCreateInput! @spread): Payment @field(resolver: "PaymentMutation@store")
-    updatePayment(input: PaymentUpdateInput! @spread): Payment @update
+    voidPayment(input: VoidPaymentCreateInput! @spread): Payment @field(resolver: "PaymentMutation@void")
+    updatePayment(input: PaymentUpdateInput! @spread): Payment @field(resolver: "PaymentMutation@update")
     deletePayment(id: ID! @eq): Payment @guard(with: ["api"]) @delete
+}
+
+input VoidPaymentCreateInput {
+    id: ID! @rules(apply: ["required", "exists:payments,id"])
+    voided_reason: String!
 }
 
 input PaymentCreateInput {
@@ -22,7 +29,7 @@ input PaymentCreateInput {
 }
 
 input PaymentUpdateInput {
-    id: ID! @rules(apply: ["required", "exists:bank_accounts,id"])
+    id: ID! @rules(apply: ["required", "exists:payments,id"])
     bank_account_id: ID! @rules(apply: ["required", "exists:bank_accounts,id"])
     to_bank_account_id: ID
     transaction_amount: Float! @rules(apply: ["required"])
@@ -46,4 +53,9 @@ type Payment {
     reason: String
     payment_method: String
     bankAccount: BankAccount
+    voided: Boolean
+    voided_date: String
+    voided_reason: String
+    payment_date: String
+    payment_pending: Boolean
 }
