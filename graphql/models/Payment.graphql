@@ -1,5 +1,5 @@
 extend type Query {
-    payments(name: String @like, voided: Boolean @eq, pending: Boolean @scope): 
+    payments(search: String @scope, voided: Boolean @eq, pending: Boolean @scope): 
         [Payment] @orderBy(column: "created_at", direction: DESC) @paginate
     payment(id: ID! @eq): Payment @find
 }

@@ -45,4 +45,12 @@ class Payment extends Model
     {
         return $query->where([["payment_method", "check"]])->where("transaction_date", ">", Carbon::now());
     }
+
+    public function scopeSearch(Builder $query, String $search)
+    {
+        return $query->whereHas('bankAccount', function($q) use ($search)  {
+            return $q->where('account_number', 'like', "%$search%"); 
+        });
+    }
+
 }

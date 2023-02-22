@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class Deposit extends Model
 {
@@ -20,6 +21,13 @@ class Deposit extends Model
     public function bankAccount(): BelongsTo
     {
         return $this->belongsTo(BankAccount::class);
+    }
+
+    public function scopeSearch(Builder $query, String $search)
+    {
+        return $query->whereHas('bankAccount', function($q) use ($search)  {
+            return $q->where('account_number', 'like', "%$search%"); 
+        });
     }
 
 }
