@@ -10,6 +10,7 @@ use App\Exceptions\ValidationException;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 final class PaymentMutation
 {
@@ -106,11 +107,25 @@ final class PaymentMutation
     public function approve($rootValue, array $args)
     {
         $payment = Payment::find($args['id']);
+
+        DB::beginTransaction();
+        if($args['to_bank_account_id'] ?? null) {
+            $toBankAccount = BankAccount::find($payment->to_bank_account_id);
+            $toBankAccount->balance += $payment->transaction_amount;
+            $toBankAccount->save();
+        }
+        $bankAccount = BankAccount::find($payment->bank_account_id);
+
+        $bankAccount->balance -= $payment->transaction_amount;
+        $bankAccount->save();
+
         $payment->approved_at = Carbon::now();
-        $payment->approved_by = User::get()->first()->id;
+        $payment->approved_by_id = User::get()->first()->id;
         $payment->approved = true;
         $payment->save();
 
+        DB::commit();
+        
         return $payment;
     }
 
@@ -118,9 +133,10 @@ final class PaymentMutation
     {
         $payment = Payment::find($args['id']);
         $payment->checked_at = Carbon::now();
-        $payment->checked_by = User::get()->first()->id;
+        $payment->checked_by_id = User::get()->first()->id;
         $payment->checked = true;
         $payment->save();
+        Log::debug($payment);
 
         return $payment;
     }
