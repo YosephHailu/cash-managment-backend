@@ -140,4 +140,26 @@ final class PaymentMutation
 
         return $payment;
     }
+
+    public function delete($rootValue, array $args)
+    {
+        DB::beginTransaction();
+
+        $payment = Payment::find($args["id"]);
+
+        if($payment->approved && !$payment->voided) {
+            $bankAccount = BankAccount::find($payment->bank_account_id);
+            $bankAccount->balance += $payment->transaction_amount;
+            $bankAccount->save();
+
+            if($payment->to_bank_account_id ?? null) {
+                $toBankAccount = BankAccount::find($payment->to_bank_account_id);
+                $toBankAccount->balance -= $payment->transaction_amount;
+                $toBankAccount->save();
+            }
+        }
+        $payment->delete();
+
+        DB::commit();
+    }
 }

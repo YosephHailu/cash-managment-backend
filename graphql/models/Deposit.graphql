@@ -6,7 +6,7 @@ extend type Query {
 extend type Mutation {
     createDeposit(input: DepositCreateInput! @spread): Deposit @field(resolver: "DepositMutation@store")
     updateDeposit(input: DepositUpdateInput! @spread): Deposit @update
-    deleteDeposit(id: ID! @eq): Deposit @guard(with: ["api"]) @delete
+    deleteDeposit(id: ID! @eq): Deposit @guard(with: ["api"]) @field(resolver: "DepositMutation@delete")
 }
 
 input DepositCreateInput {

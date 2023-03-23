@@ -6,7 +6,7 @@ extend type Query {
 extend type Mutation {
     createBankAccount(input: BankAccountCreateInput! @spread): BankAccount  @field(resolver: "BankAccountMutation@store")
     updateBankAccount(input: BankAccountUpdateInput! @spread): BankAccount @field(resolver: "BankAccountMutation@update")
-    deleteBankAccount(id: ID! @eq): BankAccount @guard(with: ["api"]) @delete
+    deleteBankAccount(id: ID! @eq): BankAccount @guard(with: ["api"]) @field(resolver: "BankAccountMutation@delete")
 }
 
 input BankAccountCreateInput {

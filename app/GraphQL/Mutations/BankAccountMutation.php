@@ -53,4 +53,20 @@ final class BankAccountMutation
         
         return $bankAccount;
     }
+
+    public function delete($rootValue, array $args)
+    {
+        $bankAccount = BankAccount::find($args["id"]);
+
+        if($bankAccount->deposits()->exists() || $bankAccount->payments()->exists()) {
+            return [
+                'message' => "Linked resources exists",
+                'status' => 'SUCCESS',
+            ];
+        } else {
+            $bankAccount->delete();
+            return $bankAccount;
+        }
+
+    }
 }

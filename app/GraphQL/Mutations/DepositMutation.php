@@ -42,4 +42,20 @@ final class DepositMutation
         return $dispatch;
     }
 
+    public function delete($rootValue, array $args)
+    {
+        DB::beginTransaction();
+
+        $deposit = Deposit::find($args["id"]);
+
+        $bankAccount = BankAccount::find($deposit->bank_account_id);
+
+        $bankAccount->balance -= $deposit->transaction_amount;
+        $bankAccount->save();
+
+        $deposit->delete();
+
+        DB::commit();
+    }
+
 }
