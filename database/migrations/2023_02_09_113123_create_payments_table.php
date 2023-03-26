@@ -23,6 +23,7 @@ return new class extends Migration
             $table->date("transaction_date")->default(now());
             $table->string("currency")->default("ETB");
             $table->string("payment_method");
+            $table->string("invoice_number");
 
             $table->foreignId('voided_by_id')->nullable()->constrained('users', 'id')->onUpdate('cascade')->onDelete('restrict');
             $table->date('voided_at')->nullable();

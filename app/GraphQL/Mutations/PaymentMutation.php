@@ -7,6 +7,7 @@ use App\Models\BankAccount;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 use App\Exceptions\ValidationException;
+use App\Models\Configuration;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
@@ -36,6 +37,10 @@ final class PaymentMutation
         }
         $bankAccount = BankAccount::find($args['bank_account_id']);
 
+        $config = Configuration::orderBy('created_at', 'desc')->first();
+        $config->document_no++;
+        $config->save();
+        $data['invoice_number'] = $config->document_no . "/" . $config->document_no;
         $payment = Payment::create($data->toArray());
         
         $bankAccount->balance -= $args['transaction_amount'];

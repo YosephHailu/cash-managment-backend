@@ -14,13 +14,7 @@ class PageController extends Controller
      */
     public function index()
     {
-        $files = ["buzz.two.one = 3", "fizz = 3", "fizzbuzz.root.a.b.c = 13"];
-        $result = collect();
-        foreach($files as $file) {
-            $result->push($this->rec_insert_to_collection($file));
-        }
-
-        return response()->json($result);
+        return view('index');
 
     }
 

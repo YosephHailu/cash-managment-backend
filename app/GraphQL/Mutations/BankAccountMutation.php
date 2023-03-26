@@ -37,7 +37,7 @@ final class BankAccountMutation
 
     public function update($rootValue, array $args)
     {
-        $data = collect($args)->only(["id", "account_number", "balance", "initial_balance", "branch", "bank_id", "description", "check_template_data"]);
+        $data = collect($args)->only(["id", "account_number", "balance", "branch", "bank_id", "description", "check_template_data"]);
 
         Log::debug($data);
         $bankAccount = BankAccount::find($args["id"]);

@@ -1,0 +1,30 @@
+extend type Query {
+    configurations(active: Boolean @scope): [Configuration] @orderBy(column: "created_at", direction: DESC) @all
+    configuration(id: ID! @eq): Configuration @find
+}
+
+extend type Mutation {
+    createConfiguration(input: ConfigurationCreateInput! @spread): Configuration @create
+    updateConfiguration(input: ConfigurationUpdateInput! @spread): Configuration @update
+    deleteConfiguration(id: ID! @eq): Configuration @guard(with: ["api"]) @delete
+}
+
+input ConfigurationCreateInput {
+    document_label: String! 
+    document_no: Int! 
+    issue_no: Int! 
+}
+
+input ConfigurationUpdateInput {
+    id: ID! @rules(apply: ["required", "exists:configurations,id"])
+    document_label: String! 
+    document_no: Int! 
+    issue_no: Int! 
+}
+
+type Configuration {
+    id: ID
+    document_label: String 
+    document_no: Int
+    issue_no: Int
+}
