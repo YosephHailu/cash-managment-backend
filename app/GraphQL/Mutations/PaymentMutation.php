@@ -30,12 +30,6 @@ final class PaymentMutation
             "payment_method", "reason", "project"]);
 
         DB::beginTransaction();
-        if($args['to_bank_account_id'] ?? null) {
-            $toBankAccount = BankAccount::find($args['to_bank_account_id']);
-            $toBankAccount->balance += $args['transaction_amount'];
-            $toBankAccount->save();
-        }
-        $bankAccount = BankAccount::find($args['bank_account_id']);
 
         $config = Configuration::orderBy('created_at', 'desc')->first();
         $config->document_no++;
@@ -43,9 +37,6 @@ final class PaymentMutation
         $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
         $payment = Payment::create($data->toArray());
         
-        $bankAccount->balance -= $args['transaction_amount'];
-        $bankAccount->save();
-
         DB::commit();
 
         return $payment;
@@ -79,10 +70,10 @@ final class PaymentMutation
             $toBankAccount->balance += $args['transaction_amount'];
             $toBankAccount->save();
         }
-        $bankAccount = BankAccount::find($args['bank_account_id']);
 
         $payment->update($data->toArray());
         
+        $bankAccount = BankAccount::find($args['bank_account_id']);
         $bankAccount->balance -= $args['transaction_amount'];
         $bankAccount->save();
 
@@ -120,7 +111,6 @@ final class PaymentMutation
             $toBankAccount->save();
         }
         $bankAccount = BankAccount::find($payment->bank_account_id);
-
         $bankAccount->balance -= $payment->transaction_amount;
         $bankAccount->save();
 
@@ -154,8 +144,10 @@ final class PaymentMutation
 
         if($payment->approved && !$payment->voided) {
             $bankAccount = BankAccount::find($payment->bank_account_id);
+            Log::debug($bankAccount->balance);
             $bankAccount->balance += $payment->transaction_amount;
             $bankAccount->save();
+            Log::debug($bankAccount->balance);
 
             if($payment->to_bank_account_id ?? null) {
                 $toBankAccount = BankAccount::find($payment->to_bank_account_id);
