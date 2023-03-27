@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string("currency")->default("ETB");
             $table->string("payment_method");
             $table->string("invoice_number");
+            $table->string("cheque_number")->nullable();
 
             $table->foreignId('voided_by_id')->nullable()->constrained('users', 'id')->onUpdate('cascade')->onDelete('restrict');
             $table->date('voided_at')->nullable();

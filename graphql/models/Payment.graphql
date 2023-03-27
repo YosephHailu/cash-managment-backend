@@ -28,6 +28,7 @@ input PaymentCreateInput {
     to: String!
     project: String!
     reason: String
+    cheque_number: String
 }
 
 input PaymentUpdateInput {
@@ -41,6 +42,7 @@ input PaymentUpdateInput {
     to: String!
     project: String!
     reason: String
+    cheque_number: String
 }
 
 type Payment {
@@ -67,4 +69,5 @@ type Payment {
     approved_at: Date
     approved: Boolean
     invoice_number: String
+    cheque_number: String
 }

@@ -27,7 +27,7 @@ final class PaymentMutation
     public function store($rootValue, array $args)
     {
         $data = collect($args)->only(['transaction_date', 'bank_account_id', "to_bank_account_id", "to", "transaction_amount", "amount_in_words", 
-            "payment_method", "reason", "project"]);
+            "payment_method", "reason", "project", "cheque_number"]);
 
         DB::beginTransaction();
 
@@ -45,7 +45,7 @@ final class PaymentMutation
     public function update($rootValue, array $args)
     {
         $data = collect($args)->only(['transaction_date', 'bank_account_id', "to_bank_account_id", "to", "transaction_amount", "amount_in_words", 
-            "payment_method", "reason", "project"]);
+            "payment_method", "reason", "project", "cheque_number"]);
         DB::beginTransaction();
 
         $payment = Payment::find($args['id']);
