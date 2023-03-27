@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('configurations', function (Blueprint $table) {
             $table->id();
-            $table->integer('document_label');
+            $table->string('document_label');
             $table->integer('document_no');
             $table->integer('issue_no');
 
