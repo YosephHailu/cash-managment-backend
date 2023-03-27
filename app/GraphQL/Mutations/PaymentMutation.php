@@ -40,7 +40,7 @@ final class PaymentMutation
         $config = Configuration::orderBy('created_at', 'desc')->first();
         $config->document_no++;
         $config->save();
-        $data['invoice_number'] = $config->document_no . "/" . $config->document_no;
+        $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
         $payment = Payment::create($data->toArray());
         
         $bankAccount->balance -= $args['transaction_amount'];

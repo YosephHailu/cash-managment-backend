@@ -66,4 +66,5 @@ type Payment {
     approved_by_id: ID
     approved_at: Date
     approved: Boolean
+    invoice_number: String
 }
