@@ -4,27 +4,36 @@ extend type Query {
 }
 
 extend type Mutation {
-    createConfiguration(input: ConfigurationCreateInput! @spread): Configuration @create
-    updateConfiguration(input: ConfigurationUpdateInput! @spread): Configuration @update
+    createConfiguration(input: ConfigurationCreateInput! @spread): Configuration @field(resolver: "ConfigurationMutation@store")
+    updateConfiguration(input: ConfigurationUpdateInput! @spread): Configuration @field(resolver: "ConfigurationMutation@update")
     deleteConfiguration(id: ID! @eq): Configuration @guard(with: ["api"]) @delete
 }
 
 input ConfigurationCreateInput {
+    company_address: String 
+    company_name: String!
     document_label: String! 
     document_no: Int! 
     issue_no: Int! 
+    company_logo: Upload
 }
 
 input ConfigurationUpdateInput {
     id: ID! @rules(apply: ["required", "exists:configurations,id"])
+    company_address: String 
+    company_name: String!
     document_label: String! 
     document_no: Int! 
     issue_no: Int! 
+    company_logo: Upload
 }
 
 type Configuration {
     id: ID
     document_label: String 
+    company_address: String 
+    company_name: String 
     document_no: Int
     issue_no: Int
+    company_logo_url: String
 }
