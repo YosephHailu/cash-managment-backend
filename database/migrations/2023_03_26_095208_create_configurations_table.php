@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('document_label');
             $table->integer('document_no');
             $table->integer('issue_no');
-            $table->integer('company_name');
-            $table->integer('company_address')->nullable();
+            $table->string('company_name');
+            $table->string('company_address')->nullable();
 
             $table->softDeletes();
             $table->timestamps();
