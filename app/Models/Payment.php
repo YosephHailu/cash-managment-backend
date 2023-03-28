@@ -36,6 +36,11 @@ class Payment extends Model
         return Carbon::parse($this->transaction_date)->format("M-d-Y");
     }
 
+    public function getTransactionDateAttribute()
+    {
+        return Carbon::parse($this->transaction_date)->format("d-M-Y");
+    }
+
     public function getPaymentPendingAttribute()
     {
         return (Str::lower($this->payment_method) == "check") && Carbon::parse($this->transaction_date)->isFuture();
