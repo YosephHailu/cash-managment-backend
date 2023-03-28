@@ -33,12 +33,7 @@ class Payment extends Model
 
     public function getPaymentDateAttribute()
     {
-        return Carbon::parse($this->transaction_date)->format("M-d-Y");
-    }
-
-    public function getTransactionDateAttribute()
-    {
-        return Carbon::parse($this->transaction_date)->format("d-M-Y");
+        return Carbon::parse($this->transaction_date)->format("d-m-Y");
     }
 
     public function getPaymentPendingAttribute()
