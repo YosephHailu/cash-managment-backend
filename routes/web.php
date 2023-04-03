@@ -19,3 +19,4 @@ use Psy\Readline\Hoa\Console;
 
 
 Route::get('/', [PageController::class, 'index']);
+Route::get('payment-export', [PageController::class, 'export']);

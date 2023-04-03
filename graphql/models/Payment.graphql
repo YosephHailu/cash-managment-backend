@@ -11,6 +11,11 @@ extend type Mutation {
     approvePayment(id: ID!): Payment @field(resolver: "PaymentMutation@approve")
     updatePayment(input: PaymentUpdateInput! @spread): Payment @field(resolver: "PaymentMutation@update")
     deletePayment(id: ID! @eq): Payment @guard(with: ["api"]) @field(resolver: "PaymentMutation@delete")
+    exportPayments: PaymentExport @guard(with: ["api"]) @field(resolver: "PaymentMutation@export")
+}
+
+type PaymentExport {
+    status: Boolean
 }
 
 input VoidPaymentCreateInput {
