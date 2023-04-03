@@ -32,13 +32,16 @@ final class PaymentMutation
         DB::beginTransaction();
 
         Log::debug($data['payment_method']);
+        Log::debug($data['payment_method'] == "Check");
+
         if($data['payment_method'] == "Check") {
             $config = Configuration::orderBy('created_at', 'desc')->first();
             $config->document_no++;
             $config->save();
             $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
+        } else {
+            $data['invoice_number'] = "-----/----";
         }
-        $data['invoice_number'] = "-----/----";
         $payment = Payment::create($data->toArray());
         
         DB::commit();
