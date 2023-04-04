@@ -31,9 +31,6 @@ final class PaymentMutation
 
         DB::beginTransaction();
 
-        Log::debug($data['payment_method']);
-        Log::debug($data['payment_method'] == "Check");
-
         if($data['payment_method'] == "Check") {
             $config = Configuration::orderBy('created_at', 'desc')->first();
             $config->document_no++;

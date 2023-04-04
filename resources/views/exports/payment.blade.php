@@ -27,6 +27,12 @@
                 Transaction Date
             </th>
             <th style="text-align: center; background-color: gray; text-transform: uppercase">
+                Cheque Number
+            </th>
+            <th style="text-align: center; background-color: gray; text-transform: uppercase">
+                Invoice Number
+            </th>
+            <th style="text-align: center; background-color: gray; text-transform: uppercase">
                 Payment Reason
             </th>
     </thead>
@@ -39,6 +45,8 @@
             <td style="width: 150px; text-align: center;">{{ $payment->to }}</td>
             <td style="width: 150px; text-align: center;">{{ $payment->project }}</td>
             <td style="width: 150px; text-align: center;">{{ $payment->transaction_date }}</td>
+            <td style="width: 150px; text-align: center;">{{ $payment->cheque_number }}</td>
+            <td style="width: 150px; text-align: center;">{{ $payment->invoice_number }}</td>
             <td style="width: 150px; text-align: center;">{{ $payment->reason }}</td>
         </tr>
         @endforeach
