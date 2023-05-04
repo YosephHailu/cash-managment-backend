@@ -31,19 +31,19 @@ final class PaymentMutation
 
         DB::beginTransaction();
 
-        // if($data['payment_method'] == "Check") {
-        //     $config = Configuration::orderBy('created_at', 'desc')->first();
-        //     $config->document_no++;
-        //     $config->save();
-        //     $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
-        // } else {
-        //     $data['invoice_number'] = "-----/----";
-        // }
+        if($data['payment_method'] == "Check") {
+            $config = Configuration::orderBy('created_at', 'desc')->first();
+            $config->document_no++;
+            $config->save();
+            $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
+        } else {
+            $data['invoice_number'] = "-----/----";
+        }
 
-        $config = Configuration::orderBy('created_at', 'desc')->first();
-        $config->document_no++;
-        $config->save();
-        $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
+        // $config = Configuration::orderBy('created_at', 'desc')->first();
+        // $config->document_no++;
+        // $config->save();
+        // $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
         $payment = Payment::create($data->toArray());
         
         DB::commit();
