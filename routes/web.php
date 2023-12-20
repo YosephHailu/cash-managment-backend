@@ -20,3 +20,11 @@ use Psy\Readline\Hoa\Console;
 
 Route::get('/', [PageController::class, 'index']);
 Route::get('payment-export', [PageController::class, 'export']);
+
+Route::get('/{path?}', function () {
+    return view('welcome');
+})->where('path', '.*');
+
+Route::get('/{path?}/{path?}', function () {
+    return view('welcome');
+});
