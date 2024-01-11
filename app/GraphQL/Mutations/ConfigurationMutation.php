@@ -19,7 +19,7 @@ final class ConfigurationMutation
 
     public function store($rootValue, array $args)
     {
-        $data = collect($args)->only(['company_name', 'company_address', 'issue_no', 'document_no', 'document_label']);
+        $data = collect($args)->only(['company_name', 'company_address', 'issue_no', 'document_no', 'document_label', 'voucher_for_all']);
 
         $config = Configuration::create($data->toArray());
 
@@ -34,7 +34,7 @@ final class ConfigurationMutation
 
     public function update($rootValue, array $args)
     {
-        $data = collect($args)->only(['company_name', 'company_address', 'issue_no', 'document_no', 'document_label']);
+        $data = collect($args)->only(['company_name', 'company_address', 'issue_no', 'document_no', 'document_label', 'voucher_for_all']);
 
         $config = Configuration::find($args['id']);
         $config->update($data->toArray());

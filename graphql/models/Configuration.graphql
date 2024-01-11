@@ -16,6 +16,7 @@ input ConfigurationCreateInput {
     document_no: Int! 
     issue_no: Int! 
     company_logo: Upload
+    voucher_for_all: Boolean
 }
 
 input ConfigurationUpdateInput {
@@ -26,6 +27,7 @@ input ConfigurationUpdateInput {
     document_no: Int! 
     issue_no: Int! 
     company_logo: Upload
+    voucher_for_all: Boolean
 }
 
 type Configuration {
@@ -36,4 +38,5 @@ type Configuration {
     document_no: Int
     issue_no: Int
     company_logo_url: String
+    voucher_for_all: Boolean
 }
