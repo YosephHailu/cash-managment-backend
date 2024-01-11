@@ -19,8 +19,9 @@ final class ConfigurationMutation
 
     public function store($rootValue, array $args)
     {
-        $data = collect($args)->only(['company_name', 'company_address', 'issue_no', 'document_no', 'document_label', 'voucher_for_all']);
+        $data = collect($args)->only(['company_name', 'company_address', 'issue_no', 'document_no', 'document_label']);
 
+        $data['voucher_for_all'] = $args['voucher_for_all'] ?? false;
         $config = Configuration::create($data->toArray());
 
         try {
@@ -34,8 +35,9 @@ final class ConfigurationMutation
 
     public function update($rootValue, array $args)
     {
-        $data = collect($args)->only(['company_name', 'company_address', 'issue_no', 'document_no', 'document_label', 'voucher_for_all']);
+        $data = collect($args)->only(['company_name', 'company_address', 'issue_no', 'document_no', 'document_label']);
 
+        $data['voucher_for_all'] = $args['voucher_for_all'] ?? false;
         $config = Configuration::find($args['id']);
         $config->update($data->toArray());
 

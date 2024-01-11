@@ -30,9 +30,9 @@ final class PaymentMutation
             "payment_method", "reason", "project", "cheque_number"]);
 
         DB::beginTransaction();
+        $config = Configuration::orderBy('created_at', 'desc')->first();
 
-        if($data['payment_method'] == "Check") {
-            $config = Configuration::orderBy('created_at', 'desc')->first();
+        if($data['payment_method'] == "Check" || $config->voucher_for_all) {
             $config->document_no++;
             $config->save();
             $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
