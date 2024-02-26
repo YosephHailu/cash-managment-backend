@@ -14,7 +14,19 @@ class Payment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["id", "transaction_amount", "amount_in_words", "invoice_number", "cheque_number", "transaction_date", "to", "project", "payment_method", "reason", "bank_account_id"];
+    protected $fillable = ["id", "transaction_amount", "amount_in_words", "invoice_number", "cheque_number", 'to_bank_account_id', "transaction_date", "to", "project", "payment_method", "reason", "bank_account_id"];
+
+    function ScopeDates(Builder $query, $value) {
+        if(($value[0] ?? false) && ($value[1] ?? false)) {
+            return $query->whereBetween('transaction_date', [Carbon::parse($value[0]), Carbon::parse($value[1])]);
+        } else {
+            return $query;
+        }
+    }
+
+    function ScopeFuture(Builder $query, $value) {
+        return $query->whereDate('transaction_date', ">", Carbon::now());
+    }
 
     /**
      * Get the bankAccount that owns the Payment

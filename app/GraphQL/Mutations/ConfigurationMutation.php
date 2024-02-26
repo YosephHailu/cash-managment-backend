@@ -21,6 +21,7 @@ final class ConfigurationMutation
     {
         $data = collect($args)->only(['company_name', 'company_address', 'issue_no', 'document_no', 'document_label']);
 
+        $data['voucher_for_all'] = $args['voucher_for_all'] ?? false;
         $config = Configuration::create($data->toArray());
 
         try {
@@ -36,6 +37,7 @@ final class ConfigurationMutation
     {
         $data = collect($args)->only(['company_name', 'company_address', 'issue_no', 'document_no', 'document_label']);
 
+        $data['voucher_for_all'] = $args['voucher_for_all'] ?? false;
         $config = Configuration::find($args['id']);
         $config->update($data->toArray());
 

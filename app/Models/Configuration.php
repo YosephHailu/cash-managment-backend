@@ -14,7 +14,7 @@ class Configuration extends Model implements HasMedia
 {
     use HasFactory, SoftDeletes, InteractsWithMedia;
 
-    protected $fillable = ['company_name', 'company_address', 'issue_no', 'document_no', 'document_label'];
+    protected $fillable = ['company_name', 'company_address', 'issue_no', 'document_no', 'document_label', 'voucher_for_all'];
 
     public function scopeActive(Builder $query, String $search)
     {

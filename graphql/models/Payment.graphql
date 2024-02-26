@@ -1,5 +1,6 @@
 extend type Query {
-    payments(search: String @scope, voided: Boolean @eq, approved: Boolean @where(operator: "="), pending: Boolean @scope): 
+    payments(search: String @scope, voided: Boolean @eq, approved: Boolean @where(operator: "="), 
+        pending: Boolean @scope, bank_account_id: ID @eq, dates: JSON @scope, future: Boolean @scope): 
         [Payment] @orderBy(column: "created_at", direction: DESC) @paginate
     paymentPersons: 
         [PaymentPerson] @field(resolver: "PaymentQuery@paymentPersons")

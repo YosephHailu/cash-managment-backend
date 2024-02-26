@@ -30,20 +30,15 @@ final class PaymentMutation
             "payment_method", "reason", "project", "cheque_number"]);
 
         DB::beginTransaction();
-
-        // if($data['payment_method'] == "Check") {
-        //     $config = Configuration::orderBy('created_at', 'desc')->first();
-        //     $config->document_no++;
-        //     $config->save();
-        //     $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
-        // } else {
-        //     $data['invoice_number'] = "-----/----";
-        // }
-
         $config = Configuration::orderBy('created_at', 'desc')->first();
-        $config->document_no++;
-        $config->save();
-        $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
+
+        if($data['payment_method'] == "Check" || $config->voucher_for_all) {
+            $config->document_no++;
+            $config->save();
+            $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
+        } else {
+            $data['invoice_number'] = "-----/----";
+        }
         $payment = Payment::create($data->toArray());
         
         DB::commit();
@@ -126,10 +121,11 @@ final class PaymentMutation
         }
 
         DB::beginTransaction();
-        if($args['to_bank_account_id'] ?? null) {
+        if($payment->to_bank_account_id ?? null) {
             $toBankAccount = BankAccount::find($payment->to_bank_account_id);
             $toBankAccount->balance += $payment->transaction_amount;
             $toBankAccount->save();
+            Log::debug($toBankAccount);
         }
         $bankAccount = BankAccount::find($payment->bank_account_id);
         $bankAccount->balance -= $payment->transaction_amount;

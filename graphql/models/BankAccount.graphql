@@ -8,7 +8,6 @@ extend type Mutation {
     updateBankAccount(input: BankAccountUpdateInput! @spread): BankAccount @field(resolver: "BankAccountMutation@update")
     deleteBankAccount(id: ID! @eq): BankAccount @guard(with: ["api"]) @field(resolver: "BankAccountMutation@delete")
     updateBankAccountTemplate(input: BankAccountTemplateUpdateInput! @spread): BankAccount @field(resolver: "BankAccountMutation@updateBankAccountTemplate")
-
 }
 
 input BankAccountTemplateUpdateInput {
