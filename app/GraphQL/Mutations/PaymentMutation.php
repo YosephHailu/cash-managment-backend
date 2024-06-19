@@ -88,8 +88,13 @@ final class PaymentMutation
     public function void($rootValue, array $args)
     {
         DB::beginTransaction();
-
         $payment = Payment::find($args['id']);
+        if($payment->voided) {
+            return [
+                'message' => "Already Voided",
+                'status' => 'Error',
+            ];
+        }
         $payment->voided_reason = $args['voided_reason'];
         $payment->voided_at = Carbon::now();
         $payment->voided_by_id = User::get()->first()->id;
@@ -108,11 +113,19 @@ final class PaymentMutation
     {
         $payment = Payment::find($args['id']);
 
+        if($payment->approved) {
+            return [
+                'message' => "Already Approved",
+                'status' => 'Error',
+            ];
+        }
+
         DB::beginTransaction();
-        if($args['to_bank_account_id'] ?? null) {
+        if($payment->to_bank_account_id ?? null) {
             $toBankAccount = BankAccount::find($payment->to_bank_account_id);
             $toBankAccount->balance += $payment->transaction_amount;
             $toBankAccount->save();
+            Log::debug($toBankAccount);
         }
         $bankAccount = BankAccount::find($payment->bank_account_id);
         $bankAccount->balance -= $payment->transaction_amount;
@@ -131,11 +144,18 @@ final class PaymentMutation
     public function check($rootValue, array $args)
     {
         $payment = Payment::find($args['id']);
+        
+        if($payment->checked) {
+            return [
+                'message' => "Already Checked",
+                'status' => 'Error',
+            ];
+        }
+
         $payment->checked_at = Carbon::now();
         $payment->checked_by_id = User::get()->first()->id;
         $payment->checked = true;
         $payment->save();
-        Log::debug($payment);
 
         return $payment;
     }
@@ -148,10 +168,8 @@ final class PaymentMutation
 
         if($payment->approved && !$payment->voided) {
             $bankAccount = BankAccount::find($payment->bank_account_id);
-            Log::debug($bankAccount->balance);
             $bankAccount->balance += $payment->transaction_amount;
             $bankAccount->save();
-            Log::debug($bankAccount->balance);
 
             if($payment->to_bank_account_id ?? null) {
                 $toBankAccount = BankAccount::find($payment->to_bank_account_id);
