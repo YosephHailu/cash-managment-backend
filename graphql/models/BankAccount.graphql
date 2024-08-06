@@ -7,6 +7,12 @@ extend type Mutation {
     createBankAccount(input: BankAccountCreateInput! @spread): BankAccount  @field(resolver: "BankAccountMutation@store")
     updateBankAccount(input: BankAccountUpdateInput! @spread): BankAccount @field(resolver: "BankAccountMutation@update")
     deleteBankAccount(id: ID! @eq): BankAccount @guard(with: ["api"]) @field(resolver: "BankAccountMutation@delete")
+    updateBankAccountTemplate(input: BankAccountTemplateUpdateInput! @spread): BankAccount @field(resolver: "BankAccountMutation@updateBankAccountTemplate")
+}
+
+input BankAccountTemplateUpdateInput {
+    id: ID! @rules(apply: ["required", "exists:bank_accounts,id"])
+    check_template_data: JSON
 }
 
 input BankAccountCreateInput {

@@ -1,5 +1,5 @@
 extend type Query {
-    deposits(search: String @scope): [Deposit] @orderBy(column: "created_at", direction: DESC) @paginate
+    deposits(search: String @scope, bank_account_id: ID @eq): [Deposit] @orderBy(column: "created_at", direction: DESC) @paginate
     deposit(id: ID! @eq): Deposit @find
 }
 

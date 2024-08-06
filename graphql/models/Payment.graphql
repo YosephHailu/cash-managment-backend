@@ -1,7 +1,14 @@
 extend type Query {
-    payments(search: String @scope, voided: Boolean @eq, approved: Boolean @where(operator: "="), pending: Boolean @scope): 
+    payments(search: String @scope, voided: Boolean @eq, approved: Boolean @where(operator: "="), 
+        pending: Boolean @scope, bank_account_id: ID @eq, dates: JSON @scope, future: Boolean @scope): 
         [Payment] @orderBy(column: "created_at", direction: DESC) @paginate
+    paymentPersons: 
+        [PaymentPerson] @field(resolver: "PaymentQuery@paymentPersons")
     payment(id: ID! @eq): Payment @find
+}
+
+type PaymentPerson {
+    to: String
 }
 
 extend type Mutation {
@@ -11,6 +18,11 @@ extend type Mutation {
     approvePayment(id: ID!): Payment @field(resolver: "PaymentMutation@approve")
     updatePayment(input: PaymentUpdateInput! @spread): Payment @field(resolver: "PaymentMutation@update")
     deletePayment(id: ID! @eq): Payment @guard(with: ["api"]) @field(resolver: "PaymentMutation@delete")
+    exportPayments: PaymentExport @guard(with: ["api"]) @field(resolver: "PaymentMutation@export")
+}
+
+type PaymentExport {
+    status: Boolean
 }
 
 input VoidPaymentCreateInput {
@@ -28,6 +40,7 @@ input PaymentCreateInput {
     to: String!
     project: String!
     reason: String
+    cheque_number: String
 }
 
 input PaymentUpdateInput {
@@ -41,6 +54,7 @@ input PaymentUpdateInput {
     to: String!
     project: String!
     reason: String
+    cheque_number: String
 }
 
 type Payment {
@@ -67,4 +81,5 @@ type Payment {
     approved_at: Date
     approved: Boolean
     invoice_number: String
+    cheque_number: String
 }

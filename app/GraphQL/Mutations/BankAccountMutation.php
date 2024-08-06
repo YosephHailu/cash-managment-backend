@@ -67,6 +67,13 @@ final class BankAccountMutation
             $bankAccount->delete();
             return $bankAccount;
         }
+    }
 
+    public function updateBankAccountTemplate($rootValue, array $args)
+    {
+        $bankAccount = BankAccount::find($args["id"]);
+        $bankAccount->check_template_data = $args['check_template_data'];
+        $bankAccount->save();
+        return $bankAccount;
     }
 }
