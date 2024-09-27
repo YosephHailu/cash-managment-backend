@@ -41,6 +41,7 @@ input PaymentCreateInput {
     project: String!
     reason: String
     cheque_number: String
+    attachments: [Upload]
 }
 
 input PaymentUpdateInput {
@@ -55,6 +56,7 @@ input PaymentUpdateInput {
     project: String!
     reason: String
     cheque_number: String
+    attachments: [Upload]
 }
 
 type Payment {
@@ -82,4 +84,5 @@ type Payment {
     approved: Boolean
     invoice_number: String
     cheque_number: String
+    attachment_urls: [String]
 }

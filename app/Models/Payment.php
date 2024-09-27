@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Constants\FileFolders;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,11 +10,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Payment extends Model
+class Payment extends Model implements HasMedia
 {
-    use HasFactory;
-
+    use HasFactory, InteractsWithMedia;
+    
     protected $fillable = ["id", "transaction_amount", "amount_in_words", "invoice_number", "cheque_number", 'to_bank_account_id', "transaction_date", "to", "project", "payment_method", "reason", "bank_account_id"];
 
     function ScopeDates(Builder $query, $value) {
@@ -26,6 +29,16 @@ class Payment extends Model
 
     function ScopeFuture(Builder $query, $value) {
         return $query->whereDate('transaction_date', ">", Carbon::now());
+    }
+
+    public function getAttachmentUrlsAttribute()
+    {
+        $file_urls = [];
+        foreach($this->getMedia(FileFolders::PAYMENT_ATTACHMENT) as $media) {
+            array_push($file_urls, $media->getFullUrl());
+        }
+        
+        return $file_urls;
     }
 
     /**

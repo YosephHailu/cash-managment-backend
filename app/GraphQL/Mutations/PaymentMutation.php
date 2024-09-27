@@ -41,6 +41,9 @@ final class PaymentMutation
         }
         $payment = Payment::create($data->toArray());
         
+        foreach($args['attachments'] as $attachment)
+            $payment->addMedia($attachment)->toMediaCollection(FileFolders::PAYMENT_ATTACHMENT);
+
         DB::commit();
 
         return $payment;
@@ -80,6 +83,9 @@ final class PaymentMutation
         $bankAccount = BankAccount::find($args['bank_account_id']);
         $bankAccount->balance -= $args['transaction_amount'];
         $bankAccount->save();
+
+        foreach($args['attachments'] as $attachment)
+            $payment->addMedia($attachment)->toMediaCollection(FileFolders::PAYMENT_ATTACHMENT);
 
         DB::commit();
 
