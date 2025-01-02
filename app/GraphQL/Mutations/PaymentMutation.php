@@ -41,7 +41,7 @@ final class PaymentMutation
         }
         $payment = Payment::create($data->toArray());
         
-        foreach($args['attachments'] as $attachment)
+        foreach($args['attachments'] ?? [] as $attachment)
             $payment->addMedia($attachment)->toMediaCollection(FileFolders::PAYMENT_ATTACHMENT);
 
         DB::commit();
