@@ -84,7 +84,7 @@ final class PaymentMutation
         $bankAccount->balance -= $args['transaction_amount'];
         $bankAccount->save();
 
-        foreach($args['attachments'] as $attachment)
+        foreach($args['attachments'] ?? [] as $attachment)
             $payment->addMedia($attachment)->toMediaCollection(FileFolders::PAYMENT_ATTACHMENT);
 
         DB::commit();
