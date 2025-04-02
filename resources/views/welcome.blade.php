@@ -15,7 +15,7 @@
   <link rel="preload" href="/_nuxt/7a3a8df.js" as="script">
   <link rel="preload" href="/_nuxt/ee81187.js" as="script">
   <link rel="preload" href="/_nuxt/7d66a36.js" as="script">
-  <link rel="preload" href="/_nuxt/f09df74.js" as="script">
+  <link rel="preload" href="/_nuxt/24735f2.js" as="script">
 </head>
 
 <body>
@@ -136,7 +136,7 @@
   <script src="/_nuxt/7a3a8df.js"></script>
   <script src="/_nuxt/ee81187.js"></script>
   <script src="/_nuxt/7d66a36.js"></script>
-  <script src="/_nuxt/f09df74.js"></script>
+  <script src="/_nuxt/24735f2.js"></script>
 </body>
 
 </html>
