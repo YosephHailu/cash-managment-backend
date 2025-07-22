@@ -64,7 +64,8 @@ final class StatisticQuery
         // Log::debug($response);
         $response['total_balance'] = BankAccount::sum('balance');
         $response['total_deposited'] = Deposit::sum("transaction_amount");
-        $response['total_payment'] = Payment::where('voided_by_id', null)->sum("transaction_amount");
+        $response['total_pending'] = Payment::where('approved', false)->sum("transaction_amount");
+        $response['total_payment'] = Payment::where('voided_by_id', null)->where('to_bank_account_id', null)->sum("transaction_amount");
         return $response;
     }
 }

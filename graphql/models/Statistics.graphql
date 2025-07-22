@@ -1,21 +1,23 @@
 extend type Query {
-    dashboardStatistic: DashboardStatistic @field(resolver: "StatisticQuery@dashboardStatistics")
+    dashboardStatistic: DashboardStatistic
+        @field(resolver: "StatisticQuery@dashboardStatistics")
 }
 
 type DashboardStatistic {
     total_balance: Float!
     total_deposited: Float!
     total_payment: Float!
+    total_pending: Float
     barChartData: [BarChartData]
 }
 
 type BarChartData {
-    label: String,
-    backgroundColor: String,
+    label: String
+    backgroundColor: String
     barChartDatasets: [BarChartDataset]
 }
 
 type BarChartDataset {
-    label: String!,
+    label: String!
     value: Float!
 }
