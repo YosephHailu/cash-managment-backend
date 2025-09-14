@@ -21,6 +21,14 @@ use Psy\Readline\Hoa\Console;
 Route::get('/', [PageController::class, 'index']);
 Route::get('payment-export', [PageController::class, 'export']);
 
-Route::get('/{path?}', [PageController::class, 'index'])->where('path', '.*');
+// Handle static assets first - let Laravel serve them directly
+Route::get('/_nuxt/{file}', function ($file) {
+    $path = public_path('_nuxt/' . $file);
+    if (file_exists($path)) {
+        return response()->file($path);
+    }
+    abort(404);
+})->where('file', '.*');
 
-Route::get('/{path?}/{path?}', [PageController::class, 'index']);
+// Catch-all route for SPA - must be last
+Route::get('/{path?}', [PageController::class, 'index'])->where('path', '.*');
