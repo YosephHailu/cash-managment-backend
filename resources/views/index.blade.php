@@ -133,7 +133,7 @@
   <script>
     window.__NUXT__={config:{_app:{basePath:"/",assetsPath:"/_nuxt/",cdnURL:null}}}
   </script>
-  <script src="/_nuxt/97f91e5.js"></script>
+  <script src="/_nuxt/6bd1cf5.js"></script>
   <script src="/_nuxt/ee81187.js"></script>
   <script src="/_nuxt/7d66a36.js"></script>
   <script src="/_nuxt/32bc1e0.js"></script>
