@@ -124,19 +124,30 @@
       }
     </style>
     <script>
-      window.addEventListener("error",function(){var e=document.getElementById("nuxt-loading");e&&(e.className+=" error")})
+      window.addEventListener("error", function() {
+        var e = document.getElementById("nuxt-loading");
+        e && (e.className += " error")
+      })
     </script>
     <div id="nuxt-loading" aria-live="polite" role="status">
       <div>Loading...</div>
     </div>
   </div>
   <script>
-    window.__NUXT__={config:{_app:{basePath:"/",assetsPath:"/_nuxt/",cdnURL:null}}}
+    window.__NUXT__ = {
+      config: {
+        _app: {
+          basePath: "/",
+          assetsPath: "/_nuxt/",
+          cdnURL: null
+        }
+      }
+    }
   </script>
-  <script src="/_nuxt/7a3a8df.js"></script>
+  <script src="/_nuxt/9bfbd8d.js"></script>
   <script src="/_nuxt/ee81187.js"></script>
   <script src="/_nuxt/7d66a36.js"></script>
-  <script src="/_nuxt/5b7f820.js"></script>
+  <script src="/_nuxt/336bb7c.js"></script>
 </body>
 
 </html>
