@@ -147,7 +147,7 @@
   <script src="/_nuxt/9bfbd8d.js"></script>
   <script src="/_nuxt/ee81187.js"></script>
   <script src="/_nuxt/7d66a36.js"></script>
-  <script src="/_nuxt/336bb7c.js"></script>
+  <script src="/_nuxt/a1d59b4.js"></script>
 </body>
 
 </html>
