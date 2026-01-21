@@ -26,13 +26,23 @@ final class PaymentMutation
 
     public function store($rootValue, array $args)
     {
-        $data = collect($args)->only(['transaction_date', 'bank_account_id', "to_bank_account_id", "to", "transaction_amount", "amount_in_words", 
-            "payment_method", "reason", "project", "cheque_number"]);
+        $data = collect($args)->only([
+            'transaction_date',
+            'bank_account_id',
+            "to_bank_account_id",
+            "to",
+            "transaction_amount",
+            "amount_in_words",
+            "payment_method",
+            "reason",
+            "project",
+            "cheque_number"
+        ]);
 
         DB::beginTransaction();
         $config = Configuration::orderBy('created_at', 'desc')->first();
 
-        if($data['payment_method'] == "Check" || $config->voucher_for_all) {
+        if ($data['payment_method'] == "Check" || $config->voucher_for_all) {
             $config->document_no++;
             $config->save();
             $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
@@ -40,7 +50,7 @@ final class PaymentMutation
             $data['invoice_number'] = "-----/----";
         }
         $payment = Payment::create($data->toArray());
-        
+
         DB::commit();
 
         return $payment;
@@ -48,14 +58,33 @@ final class PaymentMutation
 
     public function update($rootValue, array $args)
     {
-        $data = collect($args)->only(['transaction_date', 'bank_account_id', "to_bank_account_id", "to", "transaction_amount", "amount_in_words", 
-            "payment_method", "reason", "project", "cheque_number"]);
+        $data = collect($args)->only([
+            'transaction_date',
+            'bank_account_id',
+            "to_bank_account_id",
+            "to",
+            "transaction_amount",
+            "amount_in_words",
+            "payment_method",
+            "reason",
+            "project",
+            "cheque_number"
+        ]);
         DB::beginTransaction();
 
         $payment = Payment::find($args['id']);
+        $config = Configuration::orderBy('created_at', 'desc')->first();
+
+        if (!$payment->invoice_number || $payment->invoice_number == "-----/----") {
+            if ($data['payment_method'] == "Check" || $config->voucher_for_all) {
+                $config->document_no++;
+                $config->save();
+                $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
+            }
+        }
 
         //old payment clean up section start 
-        if($payment->to_bank_account_id ?? null) {
+        if ($payment->to_bank_account_id ?? null) {
             $_toBankAccount = BankAccount::find($payment->to_bank_account_id);
             $_toBankAccount->balance -= $payment->transaction_amount;
             $_toBankAccount->save();
@@ -69,14 +98,14 @@ final class PaymentMutation
         $old_bank_account->save();
         //old payment clean up section end 
 
-        if($args['to_bank_account_id'] ?? null) {
+        if ($args['to_bank_account_id'] ?? null) {
             $toBankAccount = BankAccount::find($args['to_bank_account_id']);
             $toBankAccount->balance += $args['transaction_amount'];
             $toBankAccount->save();
         }
 
         $payment->update($data->toArray());
-        
+
         $bankAccount = BankAccount::find($args['bank_account_id']);
         $bankAccount->balance -= $args['transaction_amount'];
         $bankAccount->save();
@@ -89,7 +118,7 @@ final class PaymentMutation
     {
         DB::beginTransaction();
         $payment = Payment::find($args['id']);
-        if($payment->voided) {
+        if ($payment->voided) {
             return [
                 'message' => "Already Voided",
                 'status' => 'Error',
@@ -113,7 +142,7 @@ final class PaymentMutation
     {
         $payment = Payment::find($args['id']);
 
-        if($payment->approved) {
+        if ($payment->approved) {
             return [
                 'message' => "Already Approved",
                 'status' => 'Error',
@@ -121,7 +150,7 @@ final class PaymentMutation
         }
 
         DB::beginTransaction();
-        if($payment->to_bank_account_id ?? null) {
+        if ($payment->to_bank_account_id ?? null) {
             $toBankAccount = BankAccount::find($payment->to_bank_account_id);
             $toBankAccount->balance += $payment->transaction_amount;
             $toBankAccount->save();
@@ -137,15 +166,15 @@ final class PaymentMutation
         $payment->save();
 
         DB::commit();
-        
+
         return $payment;
     }
 
     public function check($rootValue, array $args)
     {
         $payment = Payment::find($args['id']);
-        
-        if($payment->checked) {
+
+        if ($payment->checked) {
             return [
                 'message' => "Already Checked",
                 'status' => 'Error',
@@ -166,12 +195,12 @@ final class PaymentMutation
 
         $payment = Payment::find($args["id"]);
 
-        if($payment->approved && !$payment->voided) {
+        if ($payment->approved && !$payment->voided) {
             $bankAccount = BankAccount::find($payment->bank_account_id);
             $bankAccount->balance += $payment->transaction_amount;
             $bankAccount->save();
 
-            if($payment->to_bank_account_id ?? null) {
+            if ($payment->to_bank_account_id ?? null) {
                 $toBankAccount = BankAccount::find($payment->to_bank_account_id);
                 $toBankAccount->balance -= $payment->transaction_amount;
                 $toBankAccount->save();
@@ -185,7 +214,5 @@ final class PaymentMutation
     public function export($rootValue, array $args)
     {
         Log::debug($args);
-
-        
     }
 }

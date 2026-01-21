@@ -16,6 +16,10 @@ class Configuration extends Model implements HasMedia
 
     protected $fillable = ['company_name', 'company_address', 'issue_no', 'document_no', 'document_label', 'voucher_for_all'];
 
+    protected $casts = [
+        'voucher_for_all' => 'boolean',
+    ];
+
     public function scopeActive(Builder $query, String $search)
     {
         return $query->last();
@@ -25,5 +29,4 @@ class Configuration extends Model implements HasMedia
     {
         return $this->getFirstMediaUrl(FileFolders::COMPANY_LOGO);
     }
-
 }

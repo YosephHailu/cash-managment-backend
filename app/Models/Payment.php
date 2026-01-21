@@ -16,15 +16,17 @@ class Payment extends Model
 
     protected $fillable = ["id", "transaction_amount", "amount_in_words", "invoice_number", "cheque_number", 'to_bank_account_id', "transaction_date", "to", "project", "payment_method", "reason", "bank_account_id"];
 
-    function ScopeDates(Builder $query, $value) {
-        if(($value[0] ?? false) && ($value[1] ?? false)) {
+    function ScopeDates(Builder $query, $value)
+    {
+        if (($value[0] ?? false) && ($value[1] ?? false)) {
             return $query->whereBetween('transaction_date', [Carbon::parse($value[0]), Carbon::parse($value[1])]);
         } else {
             return $query;
         }
     }
 
-    function ScopeFuture(Builder $query, $value) {
+    function ScopeFuture(Builder $query, $value)
+    {
         return $query->whereDate('transaction_date', ">", Carbon::now());
     }
 
@@ -60,9 +62,8 @@ class Payment extends Model
 
     public function scopeSearch(Builder $query, String $search)
     {
-        return $query->whereHas('bankAccount', function($q) use ($search)  {
-            return $q->where('account_number', 'like', "%$search%"); 
+        return $query->whereHas('bankAccount', function ($q) use ($search) {
+            return $q->where('account_number', 'like', "%$search%");
         });
     }
-
 }
