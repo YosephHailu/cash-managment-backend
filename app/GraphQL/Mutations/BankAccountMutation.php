@@ -41,14 +41,19 @@ final class BankAccountMutation
         $bankAccount = BankAccount::find($args["id"]);
 
         $allowedFields = ["id", "account_number", "balance", "branch", "bank_id", "description", "check_template_data"];
+        $hasNoTransactions = !$bankAccount->deposits()->exists() && !$bankAccount->payments()->exists();
 
-        if (!$bankAccount->deposits()->exists() && !$bankAccount->payments()->exists()) {
+        if ($hasNoTransactions) {
             $allowedFields[] = "initial_balance";
         }
 
-        $data = collect($args)->only($allowedFields);
+        $data = collect($args)->only($allowedFields)->toArray();
 
-        $bankAccount->update($data->toArray());
+        if ($hasNoTransactions && isset($args['initial_balance'])) {
+            $data['balance'] = $args['initial_balance'];
+        }
+
+        $bankAccount->update($data);
 
         try {
             if ($args['check_image']) {
