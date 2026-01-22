@@ -14,7 +14,7 @@ class Payment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["id", "transaction_amount", "amount_in_words", "invoice_number", "cheque_number", 'to_bank_account_id', "transaction_date", "to", "project", "payment_method", "reason", "bank_account_id"];
+    protected $fillable = ["transaction_amount", "amount_in_words", "invoice_number", "cheque_number", 'to_bank_account_id', "transaction_date", "to", "project", "payment_method", "reason", "bank_account_id"];
 
     function ScopeDates(Builder $query, $value)
     {
@@ -38,6 +38,16 @@ class Payment extends Model
     public function bankAccount(): BelongsTo
     {
         return $this->belongsTo(BankAccount::class);
+    }
+
+    /**
+     * Get the destination bank account for account-to-account payments
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function toBankAccount(): BelongsTo
+    {
+        return $this->belongsTo(BankAccount::class, 'to_bank_account_id');
     }
 
     public function getVoidedDateAttribute()

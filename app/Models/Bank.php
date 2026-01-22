@@ -10,7 +10,7 @@ class Bank extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["id", "name", "description"];
+    protected $fillable = ["name", "description"];
 
     /**
      * Get all of the bankAccounts for the Bank
