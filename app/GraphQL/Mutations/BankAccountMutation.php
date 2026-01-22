@@ -26,31 +26,38 @@ final class BankAccountMutation
         $bankAccount = BankAccount::create($data->toArray());
 
         try {
-            if($args['check_image']){
+            if ($args['check_image']) {
                 // $bankAccount->media()->delete();
                 $bankAccount->addMedia($args['check_image'])->toMediaCollection(FileFolders::CHECK);
             }
-        } catch(Exception $exception) {}
-        
+        } catch (Exception $exception) {
+        }
+
         return $bankAccount;
     }
 
     public function update($rootValue, array $args)
     {
-        $data = collect($args)->only(["id", "account_number", "balance", "branch", "bank_id", "description", "check_template_data"]);
-
-        Log::debug($data);
         $bankAccount = BankAccount::find($args["id"]);
+
+        $allowedFields = ["id", "account_number", "balance", "branch", "bank_id", "description", "check_template_data"];
+
+        if (!$bankAccount->deposits()->exists() && !$bankAccount->payments()->exists()) {
+            $allowedFields[] = "initial_balance";
+        }
+
+        $data = collect($args)->only($allowedFields);
 
         $bankAccount->update($data->toArray());
 
         try {
-            if($args['check_image']){
+            if ($args['check_image']) {
                 $bankAccount->media()->delete();
                 $bankAccount->addMedia($args['check_image'])->toMediaCollection(FileFolders::CHECK);
             }
-        } catch(Exception $exception) {}
-        
+        } catch (Exception $exception) {
+        }
+
         return $bankAccount;
     }
 
@@ -58,7 +65,7 @@ final class BankAccountMutation
     {
         $bankAccount = BankAccount::find($args["id"]);
 
-        if($bankAccount->deposits()->exists() || $bankAccount->payments()->exists()) {
+        if ($bankAccount->deposits()->exists() || $bankAccount->payments()->exists()) {
             return [
                 'message' => "Linked resources exists",
                 'status' => 'SUCCESS',
