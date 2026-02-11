@@ -50,6 +50,15 @@ final class DepositMutation
 
         $bankAccount = BankAccount::find($deposit->bank_account_id);
 
+        $remainingBalance = $bankAccount->balance - $deposit->transaction_amount;
+        if ($remainingBalance < $bankAccount->blocked_amount) {
+            DB::rollBack();
+            return [
+                'message' => "Cannot delete: account balance would fall below blocked amount ({$bankAccount->blocked_amount})",
+                'status' => 'Error',
+            ];
+        }
+
         $bankAccount->balance -= $deposit->transaction_amount;
         $bankAccount->save();
 
