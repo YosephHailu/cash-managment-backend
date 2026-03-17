@@ -6,7 +6,6 @@
 /vendor
 /laradock
 .gitmodules
-.env
 .env.backup
 .env.production
 .phpunit.result.cache
