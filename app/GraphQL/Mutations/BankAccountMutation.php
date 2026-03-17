@@ -21,7 +21,7 @@ final class BankAccountMutation
 
     public function store($rootValue, array $args)
     {
-        $data = collect($args)->only(["account_number", "balance", "initial_balance", "branch", "bank_id", "description"]);
+        $data = collect($args)->only(["account_number", "balance", "initial_balance", "blocked_amount", "branch", "bank_id", "description"]);
 
         $bankAccount = BankAccount::create($data->toArray());
 
@@ -40,7 +40,7 @@ final class BankAccountMutation
     {
         $bankAccount = BankAccount::find($args["id"]);
 
-        $allowedFields = ["id", "account_number", "balance", "branch", "bank_id", "description", "check_template_data"];
+        $allowedFields = ["id", "account_number", "balance", "blocked_amount", "branch", "bank_id", "description", "check_template_data"];
         $hasNoTransactions = !$bankAccount->deposits()->exists() && !$bankAccount->payments()->exists();
 
         if ($hasNoTransactions) {

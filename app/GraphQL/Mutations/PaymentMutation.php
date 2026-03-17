@@ -83,7 +83,7 @@ final class PaymentMutation
             }
         }
 
-        //old payment clean up section start 
+        //old payment clean up section start
         if ($payment->to_bank_account_id ?? null) {
             $_toBankAccount = BankAccount::find($payment->to_bank_account_id);
             $_toBankAccount->balance -= $payment->transaction_amount;
@@ -96,7 +96,17 @@ final class PaymentMutation
         $old_bank_account = BankAccount::find($payment->bank_account_id);
         $old_bank_account->balance += $payment->transaction_amount;
         $old_bank_account->save();
-        //old payment clean up section end 
+        //old payment clean up section end
+
+        $bankAccount = BankAccount::find($args['bank_account_id']);
+        $newBalance = $bankAccount->balance - $args['transaction_amount'];
+        if ($newBalance < $bankAccount->blocked_amount) {
+            DB::rollBack();
+            return [
+                'message' => "Insufficient balance: account balance would fall below blocked amount ({$bankAccount->blocked_amount})",
+                'status' => 'Error',
+            ];
+        }
 
         if ($args['to_bank_account_id'] ?? null) {
             $toBankAccount = BankAccount::find($args['to_bank_account_id']);
@@ -106,7 +116,7 @@ final class PaymentMutation
 
         $payment->update($data->toArray());
 
-        $bankAccount = BankAccount::find($args['bank_account_id']);
+        $bankAccount->refresh();
         $bankAccount->balance -= $args['transaction_amount'];
         $bankAccount->save();
 
@@ -118,21 +128,44 @@ final class PaymentMutation
     {
         DB::beginTransaction();
         $payment = Payment::find($args['id']);
+
         if ($payment->voided) {
             return [
                 'message' => "Already Voided",
                 'status' => 'Error',
             ];
         }
+
+        if (!$payment->approved) {
+            return [
+                'message' => "Payment is not approved yet",
+                'status' => 'Error',
+            ];
+        }
+
+        if ($payment->to_bank_account_id ?? null) {
+            $toBankAccount = BankAccount::find($payment->to_bank_account_id);
+            $remainingBalance = $toBankAccount->balance - $payment->transaction_amount;
+            if ($remainingBalance < $toBankAccount->blocked_amount) {
+                return [
+                    'message' => "Cannot void: destination account balance would fall below blocked amount ({$toBankAccount->blocked_amount})",
+                    'status' => 'Error',
+                ];
+            }
+            $toBankAccount->balance -= $payment->transaction_amount;
+            $toBankAccount->save();
+        }
+
+        $bankAccount = BankAccount::find($payment->bank_account_id);
+        $bankAccount->balance += $payment->transaction_amount;
+        $bankAccount->save();
+
         $payment->voided_reason = $args['voided_reason'];
         $payment->voided_at = Carbon::now();
         $payment->voided_by_id = User::get()->first()->id;
         $payment->voided = true;
         $payment->save();
 
-        $bankAccount = BankAccount::find($payment->bank_account_id);
-        $bankAccount->balance += $payment->transaction_amount;
-        $bankAccount->save();
         DB::commit();
 
         return $payment;
@@ -150,13 +183,22 @@ final class PaymentMutation
         }
 
         DB::beginTransaction();
+
+        $bankAccount = BankAccount::find($payment->bank_account_id);
+        $remainingBalance = $bankAccount->balance - $payment->transaction_amount;
+        if ($remainingBalance < $bankAccount->blocked_amount) {
+            return [
+                'message' => "Insufficient balance: account balance would fall below blocked amount ({$bankAccount->blocked_amount})",
+                'status' => 'Error',
+            ];
+        }
+
         if ($payment->to_bank_account_id ?? null) {
             $toBankAccount = BankAccount::find($payment->to_bank_account_id);
             $toBankAccount->balance += $payment->transaction_amount;
             $toBankAccount->save();
-            Log::debug($toBankAccount);
         }
-        $bankAccount = BankAccount::find($payment->bank_account_id);
+
         $bankAccount->balance -= $payment->transaction_amount;
         $bankAccount->save();
 
@@ -196,15 +238,23 @@ final class PaymentMutation
         $payment = Payment::find($args["id"]);
 
         if ($payment->approved && !$payment->voided) {
-            $bankAccount = BankAccount::find($payment->bank_account_id);
-            $bankAccount->balance += $payment->transaction_amount;
-            $bankAccount->save();
-
             if ($payment->to_bank_account_id ?? null) {
                 $toBankAccount = BankAccount::find($payment->to_bank_account_id);
+                $remainingBalance = $toBankAccount->balance - $payment->transaction_amount;
+                if ($remainingBalance < $toBankAccount->blocked_amount) {
+                    DB::rollBack();
+                    return [
+                        'message' => "Cannot delete: destination account balance would fall below blocked amount ({$toBankAccount->blocked_amount})",
+                        'status' => 'Error',
+                    ];
+                }
                 $toBankAccount->balance -= $payment->transaction_amount;
                 $toBankAccount->save();
             }
+
+            $bankAccount = BankAccount::find($payment->bank_account_id);
+            $bankAccount->balance += $payment->transaction_amount;
+            $bankAccount->save();
         }
         $payment->delete();
 

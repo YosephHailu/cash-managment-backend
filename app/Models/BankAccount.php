@@ -14,7 +14,7 @@ class BankAccount extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
 
-    protected $fillable = ["account_number", "balance", "initial_balance", "branch", "description", "bank_id", "check_template_data"];
+    protected $fillable = ["account_number", "balance", "initial_balance", "blocked_amount", "branch", "description", "bank_id", "check_template_data"];
 
     /**
      * The attributes that should be cast.
