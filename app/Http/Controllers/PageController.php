@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\DepositExport;
 use App\Exports\PaymentExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -22,12 +21,7 @@ class PageController extends Controller
 
     public function export(Request $request)
     {
-        return Excel::download(new PaymentExport, 'invoices.xlsx');
+        return Excel::download(new PaymentExport($request), 'payments.xlsx');
     }
-
-    public function exportDeposits(Request $request)
-    {
-        return Excel::download(new DepositExport, 'deposits.xlsx');
-    }
-
+    
 }
