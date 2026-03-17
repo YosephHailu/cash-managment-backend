@@ -2,18 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DepositExport;
 use App\Exports\PaymentExport;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         return view('index');
@@ -23,5 +18,9 @@ class PageController extends Controller
     {
         return Excel::download(new PaymentExport($request), 'payments.xlsx');
     }
-    
+
+    public function exportDeposits(Request $request)
+    {
+        return Excel::download(new DepositExport($request), 'deposits.xlsx');
+    }
 }
