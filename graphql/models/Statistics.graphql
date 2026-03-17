@@ -1,5 +1,6 @@
 extend type Query {
     dashboardStatistic: DashboardStatistic @field(resolver: "StatisticQuery@dashboardStatistics")
+    paymentOverview: PaymentOverview @field(resolver: "StatisticQuery@paymentOverview")
 }
 
 type DashboardStatistic {
@@ -18,4 +19,13 @@ type BarChartData {
 type BarChartDataset {
     label: String!,
     value: Float!
+}
+
+type PaymentOverview {
+    total_approved_amount: Float!
+    total_pending_amount: Float!
+    total_voided_amount: Float!
+    approved_count: Int!
+    pending_count: Int!
+    voided_count: Int!
 }

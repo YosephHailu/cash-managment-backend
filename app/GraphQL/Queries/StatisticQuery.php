@@ -64,7 +64,20 @@ final class StatisticQuery
         // Log::debug($response);
         $response['total_balance'] = BankAccount::sum('balance');
         $response['total_deposited'] = Deposit::sum("transaction_amount");
-        $response['total_payment'] = Payment::where('voided_by_id', null)->sum("transaction_amount");
+        $response['total_payment'] = Payment::where('voided', false)->where('approved', true)->sum("transaction_amount");
         return $response;
+    }
+
+    public function paymentOverview($_, array $args)
+    {
+        $base = Payment::query();
+        return [
+            'total_approved_amount' => (float) (clone $base)->where('voided', false)->where('approved', true)->sum('transaction_amount'),
+            'total_pending_amount' => (float) (clone $base)->where('voided', false)->where('approved', false)->sum('transaction_amount'),
+            'total_voided_amount' => (float) (clone $base)->where('voided', true)->sum('transaction_amount'),
+            'approved_count' => (int) (clone $base)->where('voided', false)->where('approved', true)->count(),
+            'pending_count' => (int) (clone $base)->where('voided', false)->where('approved', false)->count(),
+            'voided_count' => (int) (clone $base)->where('voided', true)->count(),
+        ];
     }
 }

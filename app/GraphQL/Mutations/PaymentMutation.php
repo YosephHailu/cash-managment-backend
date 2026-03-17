@@ -168,24 +168,17 @@ final class PaymentMutation
 
     public function delete($rootValue, array $args)
     {
-        DB::beginTransaction();
-
         $payment = Payment::find($args["id"]);
 
-        if($payment->approved && !$payment->voided) {
-            $bankAccount = BankAccount::find($payment->bank_account_id);
-            $bankAccount->balance += $payment->transaction_amount;
-            $bankAccount->save();
-
-            if($payment->to_bank_account_id ?? null) {
-                $toBankAccount = BankAccount::find($payment->to_bank_account_id);
-                $toBankAccount->balance -= $payment->transaction_amount;
-                $toBankAccount->save();
-            }
+        if ($payment->approved && !$payment->voided) {
+            throw new \GraphQL\Error\Error('Cannot delete an approved payment. Void it instead.');
         }
-        $payment->delete();
 
+        DB::beginTransaction();
+        $payment->delete();
         DB::commit();
+
+        return $payment;
     }
 
     public function export($rootValue, array $args)

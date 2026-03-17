@@ -21,8 +21,7 @@ class PageController extends Controller
 
     public function export(Request $request)
     {
-        return Excel::download(new PaymentExport, 'invoices.xlsx');
-        return $request;
+        return Excel::download(new PaymentExport($request), 'payments.xlsx');
     }
     
 }
