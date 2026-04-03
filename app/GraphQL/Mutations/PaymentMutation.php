@@ -40,15 +40,7 @@ final class PaymentMutation
         ]);
 
         DB::beginTransaction();
-        $config = Configuration::orderBy('created_at', 'desc')->first();
-
-        if ($data['payment_method'] == "Check" || $config->voucher_for_all) {
-            $config->document_no++;
-            $config->save();
-            $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
-        } else {
-            $data['invoice_number'] = "-----/----";
-        }
+        $data['invoice_number'] = "-----/----";
         $payment = Payment::create($data->toArray());
 
         DB::commit();
@@ -73,15 +65,6 @@ final class PaymentMutation
         DB::beginTransaction();
 
         $payment = Payment::find($args['id']);
-        $config = Configuration::orderBy('created_at', 'desc')->first();
-
-        if (!$payment->invoice_number || $payment->invoice_number == "-----/----") {
-            if ($data['payment_method'] == "Check" || $config->voucher_for_all) {
-                $config->document_no++;
-                $config->save();
-                $data['invoice_number'] = $config->document_label . "/" . $config->document_no;
-            }
-        }
 
         //old payment clean up section start
         if ($payment->to_bank_account_id ?? null) {
@@ -183,6 +166,17 @@ final class PaymentMutation
         }
 
         DB::beginTransaction();
+
+        $config = Configuration::orderBy('created_at', 'desc')->lockForUpdate()->first();
+        $shouldGenerateVoucherNumber = $payment->payment_method == "Check" || ($config && $config->voucher_for_all);
+        if (
+            $shouldGenerateVoucherNumber &&
+            (!$payment->invoice_number || $payment->invoice_number == "-----/----")
+        ) {
+            $config->document_no++;
+            $config->save();
+            $payment->invoice_number = $config->document_label . "/" . $config->document_no;
+        }
 
         $bankAccount = BankAccount::find($payment->bank_account_id);
         $remainingBalance = $bankAccount->balance - $payment->transaction_amount;
