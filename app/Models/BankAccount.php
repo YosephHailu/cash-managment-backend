@@ -37,7 +37,13 @@ class BankAccount extends Model implements HasMedia
 
     public function getTotalPaymentAttribute()
     {
-        return $this->payments()->sum('transaction_amount');
+        // Only payments that actually moved the balance: approved and not voided.
+        // Pending (not yet approved) and voided payments leave `balance` untouched,
+        // so counting them here would break: balance = initial + deposits - payments.
+        return $this->payments()
+            ->where('approved', true)
+            ->where('voided', false)
+            ->sum('transaction_amount');
     }
 
     /**

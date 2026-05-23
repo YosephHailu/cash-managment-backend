@@ -40,7 +40,12 @@ final class BankAccountMutation
     {
         $bankAccount = BankAccount::find($args["id"]);
 
-        $allowedFields = ["id", "account_number", "balance", "blocked_amount", "branch", "bank_id", "description", "check_template_data"];
+        // `balance` is never accepted directly from the client: it is a derived
+        // figure maintained by deposit/payment mutations. Letting the edit form
+        // post a (possibly stale) balance silently desyncs it from the
+        // transactions. The only sanctioned way to seed it is via initial_balance
+        // on an account that has no transactions yet.
+        $allowedFields = ["id", "account_number", "blocked_amount", "branch", "bank_id", "description", "check_template_data"];
         $hasNoTransactions = !$bankAccount->deposits()->exists() && !$bankAccount->payments()->exists();
 
         if ($hasNoTransactions) {
