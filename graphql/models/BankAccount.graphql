@@ -55,4 +55,5 @@ type BankAccount {
     payments: [Payment]
     total_deposit: Float
     total_payment: Float
+    total_incoming_transfer: Float
 }

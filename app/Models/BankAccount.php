@@ -46,6 +46,14 @@ class BankAccount extends Model implements HasMedia
             ->sum('transaction_amount');
     }
 
+    public function getTotalIncomingTransferAttribute()
+    {
+        return Payment::where('to_bank_account_id', $this->id)
+            ->where('approved', true)
+            ->where('voided', false)
+            ->sum('transaction_amount');
+    }
+
     /**
      * Get the bank that owns the BankAccount
      *

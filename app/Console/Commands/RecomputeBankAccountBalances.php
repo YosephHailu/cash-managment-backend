@@ -36,7 +36,7 @@ class RecomputeBankAccountBalances extends Command
             $query->whereKey($accountId);
         }
 
-        $accounts = $query->get();
+        $accounts = $query->with('bank')->get();
         if ($accounts->isEmpty()) {
             $this->warn('No bank accounts found.');
             return self::SUCCESS;
@@ -61,6 +61,7 @@ class RecomputeBankAccountBalances extends Command
                     }
                     $rows[] = [
                         $account->id,
+                        $account->bank?->name ?? '—',
                         $account->account_number,
                         number_format($stored, 2),
                         number_format($computed, 2),
@@ -87,7 +88,7 @@ class RecomputeBankAccountBalances extends Command
         }
 
         $this->table(
-            ['ID', 'Account #', 'Stored', 'Computed', 'Diff (stored-computed)', 'Status'],
+            ['ID', 'Bank', 'Account #', 'Stored', 'Computed', 'Diff (stored-computed)', 'Status'],
             $rows
         );
 
