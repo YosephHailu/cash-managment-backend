@@ -14,7 +14,7 @@ class BankAccount extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
 
-    protected $fillable = ["id", "account_number", "balance", "initial_balance", "branch", "description", "bank_id", "check_template_data"];
+    protected $fillable = ["account_number", "balance", "initial_balance", "blocked_amount", "branch", "description", "bank_id", "check_template_data"];
 
     /**
      * The attributes that should be cast.
@@ -37,7 +37,21 @@ class BankAccount extends Model implements HasMedia
 
     public function getTotalPaymentAttribute()
     {
-        return $this->payments()->sum('transaction_amount');
+        // Only payments that actually moved the balance: approved and not voided.
+        // Pending (not yet approved) and voided payments leave `balance` untouched,
+        // so counting them here would break: balance = initial + deposits - payments.
+        return $this->payments()
+            ->where('approved', true)
+            ->where('voided', false)
+            ->sum('transaction_amount');
+    }
+
+    public function getTotalIncomingTransferAttribute()
+    {
+        return Payment::where('to_bank_account_id', $this->id)
+            ->where('approved', true)
+            ->where('voided', false)
+            ->sum('transaction_amount');
     }
 
     /**

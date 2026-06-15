@@ -21,36 +21,53 @@ final class BankAccountMutation
 
     public function store($rootValue, array $args)
     {
-        $data = collect($args)->only(["account_number", "balance", "initial_balance", "branch", "bank_id", "description"]);
+        $data = collect($args)->only(["account_number", "balance", "initial_balance", "blocked_amount", "branch", "bank_id", "description"]);
 
         $bankAccount = BankAccount::create($data->toArray());
 
         try {
-            if($args['check_image']){
+            if ($args['check_image']) {
                 // $bankAccount->media()->delete();
                 $bankAccount->addMedia($args['check_image'])->toMediaCollection(FileFolders::CHECK);
             }
-        } catch(Exception $exception) {}
-        
+        } catch (Exception $exception) {
+        }
+
         return $bankAccount;
     }
 
     public function update($rootValue, array $args)
     {
-        $data = collect($args)->only(["id", "account_number", "balance", "branch", "bank_id", "description", "check_template_data"]);
-
-        Log::debug($data);
         $bankAccount = BankAccount::find($args["id"]);
 
-        $bankAccount->update($data->toArray());
+        // `balance` is never accepted directly from the client: it is a derived
+        // figure maintained by deposit/payment mutations. Letting the edit form
+        // post a (possibly stale) balance silently desyncs it from the
+        // transactions. The only sanctioned way to seed it is via initial_balance
+        // on an account that has no transactions yet.
+        $allowedFields = ["id", "account_number", "blocked_amount", "branch", "bank_id", "description", "check_template_data"];
+        $hasNoTransactions = !$bankAccount->deposits()->exists() && !$bankAccount->payments()->exists();
+
+        if ($hasNoTransactions) {
+            $allowedFields[] = "initial_balance";
+        }
+
+        $data = collect($args)->only($allowedFields)->toArray();
+
+        if ($hasNoTransactions && isset($args['initial_balance'])) {
+            $data['balance'] = $args['initial_balance'];
+        }
+
+        $bankAccount->update($data);
 
         try {
-            if($args['check_image']){
+            if ($args['check_image']) {
                 $bankAccount->media()->delete();
                 $bankAccount->addMedia($args['check_image'])->toMediaCollection(FileFolders::CHECK);
             }
-        } catch(Exception $exception) {}
-        
+        } catch (Exception $exception) {
+        }
+
         return $bankAccount;
     }
 
@@ -58,7 +75,7 @@ final class BankAccountMutation
     {
         $bankAccount = BankAccount::find($args["id"]);
 
-        if($bankAccount->deposits()->exists() || $bankAccount->payments()->exists()) {
+        if ($bankAccount->deposits()->exists() || $bankAccount->payments()->exists()) {
             return [
                 'message' => "Linked resources exists",
                 'status' => 'SUCCESS',

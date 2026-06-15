@@ -21,6 +21,7 @@ input BankAccountCreateInput {
     branch: String!
     initial_balance: Float!
     balance: Float!
+    blocked_amount: Float
     description: String
     check_image: Upload
 }
@@ -32,6 +33,7 @@ input BankAccountUpdateInput {
     branch: String!
     initial_balance: Float!
     balance: Float!
+    blocked_amount: Float
     description: String
     check_image: Upload
     check_template_data: JSON
@@ -43,6 +45,7 @@ type BankAccount {
     branch: String
     initial_balance: Float
     balance: Float
+    blocked_amount: Float
     bank_id: ID
     bank: Bank
     description: String
@@ -52,4 +55,5 @@ type BankAccount {
     payments: [Payment]
     total_deposit: Float
     total_payment: Float
+    total_incoming_transfer: Float
 }

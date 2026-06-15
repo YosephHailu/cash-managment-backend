@@ -60,6 +60,7 @@ input PaymentUpdateInput {
 type Payment {
     id: ID
     bank_account_id: ID
+    to_bank_account_id: ID
     transaction_amount: Float
     amount_in_words: String
     transaction_date: Date
@@ -69,6 +70,7 @@ type Payment {
     reason: String
     payment_method: String
     bankAccount: BankAccount
+    toBankAccount: BankAccount
     voided: Boolean
     voided_date: String
     voided_reason: String

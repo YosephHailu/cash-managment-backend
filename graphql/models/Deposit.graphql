@@ -5,7 +5,7 @@ extend type Query {
 
 extend type Mutation {
     createDeposit(input: DepositCreateInput! @spread): Deposit @field(resolver: "DepositMutation@store")
-    updateDeposit(input: DepositUpdateInput! @spread): Deposit @update
+    updateDeposit(input: DepositUpdateInput! @spread): Deposit @field(resolver: "DepositMutation@update")
     deleteDeposit(id: ID! @eq): Deposit @guard(with: ["api"]) @field(resolver: "DepositMutation@delete")
 }
 
@@ -21,7 +21,7 @@ input DepositCreateInput {
 }
 
 input DepositUpdateInput {
-    id: ID! @rules(apply: ["required", "exists:bank_accounts,id"])
+    id: ID! @rules(apply: ["required"])
     bank_account_id: ID! @rules(apply: ["required", "exists:bank_accounts,id"])
     transaction_amount: Float! @rules(apply: ["required"])
     transaction_date: Date!
