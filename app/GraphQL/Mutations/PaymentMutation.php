@@ -181,6 +181,7 @@ final class PaymentMutation
         $bankAccount = BankAccount::find($payment->bank_account_id);
         $remainingBalance = $bankAccount->balance - $payment->transaction_amount;
         if ($remainingBalance < $bankAccount->blocked_amount) {
+            DB::rollBack();
             return [
                 'message' => "Insufficient balance: account balance would fall below blocked amount ({$bankAccount->blocked_amount})",
                 'status' => 'Error',

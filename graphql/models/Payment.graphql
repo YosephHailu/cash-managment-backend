@@ -84,4 +84,6 @@ type Payment {
     approved: Boolean
     invoice_number: String
     cheque_number: String
+    message: String
+    status: String
 }
