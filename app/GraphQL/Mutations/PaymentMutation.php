@@ -66,42 +66,53 @@ final class PaymentMutation
 
         $payment = Payment::find($args['id']);
 
-        //old payment clean up section start
-        if ($payment->to_bank_account_id ?? null) {
-            $_toBankAccount = BankAccount::find($payment->to_bank_account_id);
-            $_toBankAccount->balance -= $payment->transaction_amount;
-            $_toBankAccount->save();
+        // Balances only ever reflect approved, non-voided payments (see
+        // BankAccount::getTotalPaymentAttribute and the recompute command).
+        // A pending or voided payment never moved any balance, so editing it
+        // must leave every balance untouched — otherwise we reverse/re-apply
+        // money that was never there and corrupt the stored balance.
+        $affectsBalance = $payment->approved && !$payment->voided;
 
-            $payment->to_bank_account_id = null;
-            $payment->save();
+        if ($affectsBalance) {
+            //old payment clean up section start
+            if ($payment->to_bank_account_id ?? null) {
+                $_toBankAccount = BankAccount::find($payment->to_bank_account_id);
+                $_toBankAccount->balance -= $payment->transaction_amount;
+                $_toBankAccount->save();
+            }
+
+            $old_bank_account = BankAccount::find($payment->bank_account_id);
+            $old_bank_account->balance += $payment->transaction_amount;
+            $old_bank_account->save();
+            //old payment clean up section end
+
+            $bankAccount = BankAccount::find($args['bank_account_id']);
+            $bankAccount->refresh();
+            $newBalance = $bankAccount->balance - $args['transaction_amount'];
+            if ($newBalance < $bankAccount->blocked_amount) {
+                DB::rollBack();
+                return [
+                    'message' => "Insufficient balance: account balance would fall below blocked amount ({$bankAccount->blocked_amount})",
+                    'status' => 'Error',
+                ];
+            }
+
+            if ($args['to_bank_account_id'] ?? null) {
+                $toBankAccount = BankAccount::find($args['to_bank_account_id']);
+                $toBankAccount->balance += $args['transaction_amount'];
+                $toBankAccount->save();
+            }
+
+            $bankAccount->balance -= $args['transaction_amount'];
+            $bankAccount->save();
         }
 
-        $old_bank_account = BankAccount::find($payment->bank_account_id);
-        $old_bank_account->balance += $payment->transaction_amount;
-        $old_bank_account->save();
-        //old payment clean up section end
-
-        $bankAccount = BankAccount::find($args['bank_account_id']);
-        $newBalance = $bankAccount->balance - $args['transaction_amount'];
-        if ($newBalance < $bankAccount->blocked_amount) {
-            DB::rollBack();
-            return [
-                'message' => "Insufficient balance: account balance would fall below blocked amount ({$bankAccount->blocked_amount})",
-                'status' => 'Error',
-            ];
-        }
-
-        if ($args['to_bank_account_id'] ?? null) {
-            $toBankAccount = BankAccount::find($args['to_bank_account_id']);
-            $toBankAccount->balance += $args['transaction_amount'];
-            $toBankAccount->save();
-        }
-
-        $payment->update($data->toArray());
-
-        $bankAccount->refresh();
-        $bankAccount->balance -= $args['transaction_amount'];
-        $bankAccount->save();
+        // Always persist the edited fields. Force to_bank_account_id from args
+        // (null when the destination is cleared) so transfer<->payment edits
+        // don't leave a stale destination.
+        $updateData = $data->toArray();
+        $updateData['to_bank_account_id'] = $args['to_bank_account_id'] ?? null;
+        $payment->update($updateData);
 
         DB::commit();
 
@@ -113,6 +124,7 @@ final class PaymentMutation
         $payment = Payment::find($args['id']);
 
         if ($payment->voided) {
+            DB::rollBack();
             return [
                 'message' => "Already Voided",
                 'status' => 'Error',
@@ -120,6 +132,7 @@ final class PaymentMutation
         }
 
         if (!$payment->approved) {
+            DB::rollBack();
             return [
                 'message' => "Payment is not approved yet",
                 'status' => 'Error',
@@ -130,6 +143,7 @@ final class PaymentMutation
             $toBankAccount = BankAccount::find($payment->to_bank_account_id);
             $remainingBalance = $toBankAccount->balance - $payment->transaction_amount;
             if ($remainingBalance < $toBankAccount->blocked_amount) {
+                DB::rollBack();
                 return [
                     'message' => "Cannot void: destination account balance would fall below blocked amount ({$toBankAccount->blocked_amount})",
                     'status' => 'Error',
