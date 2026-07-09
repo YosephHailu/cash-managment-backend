@@ -19,25 +19,28 @@ final class DepositMutation
 
     public function store($rootValue, array $args)
     {
-        $data = collect($args)->only(['transaction_date', 'bank_account_id', "reference_no", "currency", "transaction_amount", "check_type", "reason", "project"]);
-
         DB::beginTransaction();
-        $bankAccount = BankAccount::find($args['bank_account_id']);
+        try {
+            $bankAccount = BankAccount::lockForUpdate()->find($args['bank_account_id']);
 
-        $dispatch = Deposit::create([
-            "transaction_amount" => $args["transaction_amount"],
-            'transaction_date' => $args["transaction_date"],
-            'bank_account_id' => $args["bank_account_id"],
-            "reference_no" => $args["reference_no"],
-            "check_type" => $args["check_type"],
-            "currency" => $args["currency"],
-            "project" => $args["project"],
-            "reason" => $args["reason"],
-        ]);
+            $dispatch = Deposit::create([
+                "transaction_amount" => $args["transaction_amount"],
+                'transaction_date' => $args["transaction_date"],
+                'bank_account_id' => $args["bank_account_id"],
+                "reference_no" => $args["reference_no"],
+                "check_type" => $args["check_type"],
+                "currency" => $args["currency"],
+                "project" => $args["project"],
+                "reason" => $args["reason"],
+            ]);
 
-        $bankAccount->balance += $args['transaction_amount'];
-        $bankAccount->save();
-        DB::commit();
+            $bankAccount->balance += $args['transaction_amount'];
+            $bankAccount->save();
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
 
         return $dispatch;
     }
@@ -47,43 +50,48 @@ final class DepositMutation
         $data = collect($args)->only(['transaction_date', 'bank_account_id', "reference_no", "currency", "transaction_amount", "check_type", "reason", "project"]);
 
         DB::beginTransaction();
+        try {
+            $deposit = Deposit::lockForUpdate()->findOrFail($args['id']);
 
-        $deposit = Deposit::findOrFail($args['id']);
+            $oldBankAccount = BankAccount::lockForUpdate()->find($deposit->bank_account_id);
+            $sameAccount = $oldBankAccount->id == $args['bank_account_id'];
 
-        $oldBankAccount = BankAccount::find($deposit->bank_account_id);
-        $sameAccount = $oldBankAccount->id == $args['bank_account_id'];
-
-        if ($sameAccount) {
-            $netBalance = $oldBankAccount->balance - $deposit->transaction_amount + $args['transaction_amount'];
-            if ($netBalance < $oldBankAccount->blocked_amount) {
-                DB::rollBack();
-                return [
-                    'message' => "Cannot update: account balance would fall below blocked amount ({$oldBankAccount->blocked_amount})",
-                    'status' => 'Error',
-                ];
+            if ($sameAccount) {
+                $netBalance = $oldBankAccount->balance - $deposit->transaction_amount + $args['transaction_amount'];
+                if ($netBalance < $oldBankAccount->blocked_amount) {
+                    DB::rollBack();
+                    return [
+                        'message' => "Cannot update: account balance would fall below blocked amount ({$oldBankAccount->blocked_amount})",
+                        'status' => 'Error',
+                    ];
+                }
+            } else {
+                $oldRemainingBalance = $oldBankAccount->balance - $deposit->transaction_amount;
+                if ($oldRemainingBalance < $oldBankAccount->blocked_amount) {
+                    DB::rollBack();
+                    return [
+                        'message' => "Cannot update: source account balance would fall below blocked amount ({$oldBankAccount->blocked_amount})",
+                        'status' => 'Error',
+                    ];
+                }
             }
-        } else {
-            $oldRemainingBalance = $oldBankAccount->balance - $deposit->transaction_amount;
-            if ($oldRemainingBalance < $oldBankAccount->blocked_amount) {
-                DB::rollBack();
-                return [
-                    'message' => "Cannot update: source account balance would fall below blocked amount ({$oldBankAccount->blocked_amount})",
-                    'status' => 'Error',
-                ];
-            }
+
+            $oldBankAccount->balance -= $deposit->transaction_amount;
+            $oldBankAccount->save();
+
+            $bankAccount = $sameAccount
+                ? $oldBankAccount
+                : BankAccount::lockForUpdate()->find($args['bank_account_id']);
+            $bankAccount->balance += $args['transaction_amount'];
+            $bankAccount->save();
+
+            $deposit->update($data->toArray());
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
-
-        $oldBankAccount->balance -= $deposit->transaction_amount;
-        $oldBankAccount->save();
-
-        $bankAccount = BankAccount::find($args['bank_account_id']);
-        $bankAccount->refresh();
-        $bankAccount->balance += $args['transaction_amount'];
-        $bankAccount->save();
-
-        $deposit->update($data->toArray());
-
-        DB::commit();
 
         return $deposit;
     }
@@ -91,26 +99,30 @@ final class DepositMutation
     public function delete($rootValue, array $args)
     {
         DB::beginTransaction();
+        try {
+            $deposit = Deposit::lockForUpdate()->find($args["id"]);
 
-        $deposit = Deposit::find($args["id"]);
+            $bankAccount = BankAccount::lockForUpdate()->find($deposit->bank_account_id);
 
-        $bankAccount = BankAccount::find($deposit->bank_account_id);
+            $remainingBalance = $bankAccount->balance - $deposit->transaction_amount;
+            if ($remainingBalance < $bankAccount->blocked_amount) {
+                DB::rollBack();
+                return [
+                    'message' => "Cannot delete: account balance would fall below blocked amount ({$bankAccount->blocked_amount})",
+                    'status' => 'Error',
+                ];
+            }
 
-        $remainingBalance = $bankAccount->balance - $deposit->transaction_amount;
-        if ($remainingBalance < $bankAccount->blocked_amount) {
+            $bankAccount->balance -= $deposit->transaction_amount;
+            $bankAccount->save();
+
+            $deposit->delete();
+
+            DB::commit();
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return [
-                'message' => "Cannot delete: account balance would fall below blocked amount ({$bankAccount->blocked_amount})",
-                'status' => 'Error',
-            ];
+            throw $e;
         }
-
-        $bankAccount->balance -= $deposit->transaction_amount;
-        $bankAccount->save();
-
-        $deposit->delete();
-
-        DB::commit();
     }
 
 }
